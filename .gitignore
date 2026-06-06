@@ -21,3 +21,8 @@ models
 # macOS/cloud sync conflict copies
 * [0-9].*
 * copy.*
+
+# Hackathon planning (not production code)
+PLAN.md
+DEMO_SCRIPT.md
+SUBMISSION_FORM.md
