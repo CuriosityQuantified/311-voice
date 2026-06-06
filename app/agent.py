@@ -52,11 +52,18 @@ SYSTEM = (
     "1. As soon as you receive the resident's complaint, call search_services with it to "
     "retrieve candidate 311 services.\n"
     "2. Then call recommend_service with the SINGLE best service (picked_ka MUST be one of "
-    "the returned candidate KA ids) and one sentence of reasoning. Ask the user to confirm "
-    "or choose another.\n"
-    "3. As the user provides or revises details, call update_form with ONLY the fields to "
-    "set or change (partial). On feedback like 'change the apartment to 5C', call update_form "
-    "again — do NOT resubmit.\n"
+    "the returned candidate KA ids) and one sentence of reasoning. Ask the user to confirm or "
+    "choose another, and to click Continue when ready. Then STOP — do NOT call update_form "
+    "yet. The form is not open until the user clicks Continue; trying to fill it on the "
+    "results screen is rejected.\n"
+    "3. Once the user clicks Continue (the form opens), call update_form to fill it:\n"
+    "   - description: write a CLEAR, well-formatted summary of the complaint in your own "
+    "words — concise and grammatical, NOT a verbatim copy of what the user said.\n"
+    "   - Only set address, borough, apartment, or locationDetails if the user ACTUALLY "
+    "provided them. If a field (e.g. borough) was not given, LEAVE IT BLANK — never guess or "
+    "invent an address or borough.\n"
+    "   - On later feedback like 'change the apartment to 5C', call update_form again with "
+    "just that field. Do NOT resubmit.\n"
     "4. Only after the user approves the on-screen form, call submit_service_request to file "
     "it (commits the current draft). Required: ka, address, borough. "
     "Boroughs: MANHATTAN, BROOKLYN, QUEENS, BRONX, STATEN ISLAND.\n"
@@ -196,6 +203,13 @@ def seed_form_on_continue(state: dict) -> dict | None:
     return {"form": seeded, "screen": "form"}
 
 
+def form_editing_allowed(state: dict) -> bool:
+    """The form may only be edited once it is OPEN — i.e. the user has clicked Continue and
+    the screen is the form (or the confirmation). Before that (mic/results) update_form is
+    blocked, so the agent can't skip the results review or fill the form prematurely."""
+    return (state.get("screen") or "") in ("form", "confirm")
+
+
 class ContinueToFormMiddleware(AgentMiddleware):
     """Guarantees the initial form-fill + screen transition when the user clicks Continue.
 
@@ -302,8 +316,16 @@ def build_agent(mapping: dict,
         apartment: Optional[str] = None,
         locationDetails: Optional[str] = None,
     ) -> Command:
-        """Update the draft 311 form the user sees BEFORE submission. Pass ONLY the fields to
-        set or change (partial). Use whenever the user provides or revises info. Does NOT submit."""
+        """Update the draft 311 form the user sees. Only usable AFTER the user clicks Continue
+        (the form screen is open) — calling it earlier is rejected. Pass ONLY the fields to set
+        or change (partial); leave a field out (blank) if the user has not provided it. Does NOT
+        submit."""
+        # Guard: do not let the agent fill the form before the user clicks Continue. This keeps
+        # the results-review step intact and prevents skipping straight to the form.
+        if not form_editing_allowed(state):
+            return Command(update={"messages": [ToolMessage(
+                "The form isn't open yet — do NOT fill it. Ask the user to review the "
+                "recommendation and click Continue first.", tool_call_id=tool_call_id)]})
         updates = {"ka": ka, "description": description, "address": address,
                    "borough": borough, "apartment": apartment, "locationDetails": locationDetails}
         new_form = apply_form_updates(state.get("form") or {}, updates)

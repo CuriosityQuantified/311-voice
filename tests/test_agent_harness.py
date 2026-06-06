@@ -1,7 +1,8 @@
 from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
 from langchain_core.messages import HumanMessage
 
-from app.agent import load_skill, SYSTEM, build_middleware, seed_form_on_continue
+from app.agent import (load_skill, SYSTEM, build_middleware, seed_form_on_continue,
+                       form_editing_allowed)
 from app.skills import SKILLS
 
 # A fake summary model so build_middleware() never reaches out for Google credentials in
@@ -111,3 +112,23 @@ def test_seed_form_on_continue_does_not_fire_on_mic_screen():
         "messages": [HumanMessage(content="Continue to the form")],
     }
     assert seed_form_on_continue(state) is None
+
+
+# --- update_form guard: not editable until the form is open -------------------
+
+def test_form_editing_blocked_before_continue():
+    assert form_editing_allowed({"screen": "results"}) is False
+    assert form_editing_allowed({"screen": "mic"}) is False
+    assert form_editing_allowed({}) is False
+
+
+def test_form_editing_allowed_once_form_open():
+    assert form_editing_allowed({"screen": "form"}) is True
+    assert form_editing_allowed({"screen": "confirm"}) is True
+
+
+def test_system_prompt_rules_no_premature_fill_blanks_and_clean_description():
+    s = SYSTEM.lower()
+    assert "not open until the user clicks continue" in s   # no fill before continue
+    assert "leave it blank" in s and "never guess" in s     # blank unknown fields (e.g. borough)
+    assert "not a verbatim copy" in s                       # well-formatted description
