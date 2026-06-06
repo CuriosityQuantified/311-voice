@@ -75,22 +75,31 @@ Response (`SubmitResponse`):
 `POST /api/copilotkit` — AG-UI. Frontend: `<CopilotKit runtimeUrl=".../api/copilotkit"
 agent="threeoneone">`, `useAgent({ name: "threeoneone" })`.
 
-### Agent shared state (bind UI to these)
+### Agent shared state (bind the UI to these — THIS is the chosen pattern)
 ```
-form:       { ka, description, address, borough, apartment, locationDetails }   // live draft
-submission: { sr_number, payload, status }                                      // after submit
+transcript: str                                  // the STT complaint text
+candidates: [ {ka,title,description,score,classification}, ... ]   // top-5 from search
+picked_ka:  str                                  // recommended service
+reasoning:  str                                  // one-sentence why
+emergency:  bool                                 // picked is a 911 item -> show "Call 911", block submit
+form:       { ka, description, address, borough, apartment, locationDetails }   // LIVE DRAFT
+submission: { sr_number, payload, status }       // after submit
+screen:     "mic" | "results" | "form" | "confirm"   // <- render this screen (Option A)
 ```
+The frontend renders the screen named by `screen`. Initialize a run with
+`{ messages:[{role:"user", content: makeStartMessage(transcript)}], screen:"mic", form:{} }`.
 
-### Agent tools (backend-defined, in app/agent.py)
-- `recommend_service(picked_ka, reasoning)` — surfaces the pick.
-- `update_form(ka?, description?, address?, borough?, apartment?, locationDetails?)` —
-  PARTIAL update to `form` (the draft the user sees). Call on every user revision.
-- `submit_service_request()` — commits the current `form` draft (mock).
+### Agent tools (backend-defined, in app/agent.py) — each updates state
+- `search_services(complaint)` — Pinecone retrieve; sets `candidates`, `transcript`, `screen="results"`. Agent calls this FIRST.
+- `recommend_service(picked_ka, reasoning)` — sets `picked_ka`, `reasoning`, `emergency`, `form.ka`.
+- `update_form(ka?, description?, address?, borough?, apartment?, locationDetails?)` — PARTIAL update to `form`; sets `screen="form"`. Call on every user revision.
+- `submit_service_request()` — commits current `form` (mock); sets `submission`, `screen="confirm"`.
 
-### Frontend CopilotKit actions (`web/src/copilotkit/schema.ts`)
-> ⚠️ These are a DIFFERENT integration style than the backend agent tools above. If we
-> use the CopilotKit-action path, names/args must be reconciled. Today App.tsx uses REST,
-> so this is not on the critical path. Decide before wiring: action-driven vs shared-state.
+> DECISION (2026-06-06): we use the **shared-state pattern** (useAgent), NOT the
+> action-driven (`show_match_results`/`show_service_form`) pattern. Frontend replaces the
+> useCopilotAction components with a useAgent state-binder that routes on `screen`.
+> `STT` is a separate REST call: `POST /api/transcribe` (audio) -> {text}, then feed `text`
+> into the agent start message.
 
 ---
 
