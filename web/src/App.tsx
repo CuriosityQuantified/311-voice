@@ -75,70 +75,81 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-nyc-dark text-white py-4 px-6">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <div className="w-10 h-10 bg-nyc-orange rounded-lg flex items-center justify-center">
-            <Mic className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="font-bold text-lg">311 Voice</h1>
-            <p className="text-xs text-gray-400">NYC 311 · Voice-Powered</p>
-          </div>
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="phone-frame">
+        {/* iPhone notch */}
+        <div className="phone-notch" />
+        
+        {/* Screen content */}
+        <div className="phone-screen">
+          {/* Header */}
+          <header className="bg-nyc-dark text-white py-3 px-4 flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-nyc-orange rounded-lg flex items-center justify-center">
+                <Mic className="w-4 h-4" />
+              </div>
+              <div>
+                <h1 className="font-bold text-base">311 Voice</h1>
+                <p className="text-[10px] text-gray-400">NYC 311 · Voice-Powered</p>
+              </div>
+            </div>
+          </header>
+
+          {/* Main content */}
+          <main className="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 max-w-sm w-full">
+                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                <p className="text-red-700 text-xs">{error}</p>
+              </div>
+            )}
+
+            {step === 'mic' && (
+              <MicCapture
+                onTranscript={handleTranscript}
+                onAudioBlob={handleAudioBlob}
+                isProcessing={isProcessing}
+              />
+            )}
+
+            {step === 'results' && matchResult && (
+              <MatchResults
+                result={matchResult}
+                onContinue={handleContinue}
+                onBack={handleBack}
+              />
+            )}
+
+            {step === 'form' && matchResult && (
+              <ServiceForm
+                pickedKa={matchResult.picked_ka}
+                kaTitle={
+                  matchResult.candidates.find((c) => c.ka === matchResult.picked_ka)
+                    ?.title || 'Unknown Service'
+                }
+                extractedFields={matchResult.extracted_fields}
+                onSubmit={handleSubmit}
+                onBack={handleBack}
+                isSubmitting={isSubmitting}
+              />
+            )}
+
+            {step === 'confirm' && submitResult && (
+              <Confirmation result={submitResult} onReset={handleReset} />
+            )}
+          </main>
+
+          {/* Footer */}
+          <footer className="bg-gray-100 py-2 px-4 text-center flex-shrink-0">
+            <p className="text-[10px] text-gray-500">
+              Hackathon Demo · Mock Submission Only
+            </p>
+          </footer>
         </div>
-      </header>
-
-      {/* Main content */}
-      <main className="flex-1 flex flex-col items-center justify-center p-4">
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 max-w-lg w-full">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            <p className="text-red-700 text-sm">{error}</p>
-          </div>
-        )}
-
-        {step === 'mic' && (
-          <MicCapture
-            onTranscript={handleTranscript}
-            onAudioBlob={handleAudioBlob}
-            isProcessing={isProcessing}
-          />
-        )}
-
-        {step === 'results' && matchResult && (
-          <MatchResults
-            result={matchResult}
-            onContinue={handleContinue}
-            onBack={handleBack}
-          />
-        )}
-
-        {step === 'form' && matchResult && (
-          <ServiceForm
-            pickedKa={matchResult.picked_ka}
-            kaTitle={
-              matchResult.candidates.find((c) => c.ka === matchResult.picked_ka)
-                ?.title || 'Unknown Service'
-            }
-            extractedFields={matchResult.extracted_fields}
-            onSubmit={handleSubmit}
-            onBack={handleBack}
-            isSubmitting={isSubmitting}
-          />
-        )}
-
-        {step === 'confirm' && submitResult && (
-          <Confirmation result={submitResult} onReset={handleReset} />
-        )}
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-100 py-3 px-6 text-center">
-        <p className="text-xs text-gray-500">
-          Hackathon Demo · Mock Submission Only · Not connected to real NYC 311
-        </p>
-      </footer>
+        
+        {/* Home indicator */}
+        <div className="phone-home-indicator" />
+      </div>
     </div>
   );
 }
