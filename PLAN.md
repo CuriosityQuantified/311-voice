@@ -14,9 +14,18 @@ SR number. Served from the Mac over Tailscale.
 
 ## 2. Scope
 
-**In:** voice input, Pinecone match+rerank, LLM pick (A/B), form, mock submit, iPhone via Tailscale.
-**Cut to stretch (only if time):** whisper.cpp local STT, CopilotKit generative UI, GPS
-auto-fill, photos, full top-5 reasoning UX, real API submission (NEVER submit for real).
+**In:** voice input (Web Speech), Pinecone match+rerank, LLM pick (A/B), **CopilotKit
+generative-UI form**, **GPS auto-fill (reverse geocode)**, **photo attach**, mock submit,
+iPhone via Tailscale.
+**Explicitly NOT building:** whisper.cpp local STT, full top-5 reasoning UX.
+**Never:** real 311 API submission (mock only).
+
+### Risk rule (CopilotKit is the long pole)
+
+The **deterministic form path must work end-to-end FIRST** (target ~2:15) as the safety
+net. CopilotKit generative UI is layered **on top of** that working slice. If CopilotKit
+overruns, we demo with the plain form — the core demo is never put at risk by it. GPS and
+photos are low-risk add-ons to the form.
 
 ## 3. Voice decision
 
@@ -30,14 +39,19 @@ iPhone Safari → mic (Web Speech API) → transcript text
   → POST /api/match {text}
         → Pinecone search top_k=10 + rerank top_n=5   [SPONSOR: integrated inference + rerank]
         → LLM select_service(complaint, candidates) → picked_ka + reasoning   [A/B: SLM ‖ Gemini]
-     ← {candidates[5], picked_ka, reasoning}
-  → form (description, address, borough, apartment?, locationDetails?)
-  → POST /api/submit {ka, fields}
+        → LLM extracts open-text fields from transcript (address text, apt, details)
+     ← {candidates[5], picked_ka, reasoning, extracted_fields}
+  → CopilotKit generative UI renders the 311 form (agent streams field values into it)
+  → GPS: navigator.geolocation → reverse geocode → autofill address + borough
+  → photo: camera/file capture → attached to submission (mock)
+  → POST /api/submit {ka, fields, photo?}
         → map KA → {agency, problem, problemDetails, locationType} (data/311-mapping.json)
         → build CreateServiceRequest JSON → return mock SR#
      ← {sr_number, payload, status:"mock-submitted"}
   → confirmation screen
 served via Tailscale → runs on the phone
+(FALLBACK: if CopilotKit overruns, the form renders as a plain controlled form — same
+fields, same /api/submit contract.)
 ```
 
 ## 5. The A/B LLM layer (key piece)
@@ -70,13 +84,19 @@ def select_service(complaint: str, candidates: list[Candidate]) -> Selection
 ## 6. Frozen API contract (so UI + backend build in parallel)
 
 ```
-GET  /api/health  ⇒ {ok: true, llm_backend: "gemini"|"slm"}
-POST /api/match   {text}
-                  ⇒ {candidates: [{ka,title,description,score,classification}],
-                     picked_ka, reasoning}
-POST /api/submit  {ka, description, address, borough, apartment?, locationDetails?}
-                  ⇒ {sr_number, payload, status: "mock-submitted"}
+GET  /api/health   ⇒ {ok: true, llm_backend: "gemini"|"slm"}
+POST /api/match    {text}
+                   ⇒ {candidates: [{ka,title,description,score,classification}],
+                      picked_ka, reasoning,
+                      extracted_fields: {description, address?, apartment?, locationDetails?}}
+POST /api/submit   {ka, description, address, borough, apartment?, locationDetails?, photo_b64?}
+                   ⇒ {sr_number, payload, status: "mock-submitted"}
+POST /api/copilotkit  (CopilotKit runtime endpoint; streams agent→generative-UI)
 ```
+
+GPS reverse-geocode is a frontend concern (autofills `address`/`borough` before submit);
+no backend route needed. Photo is sent as base64 in `/api/submit` (`photo_b64`) and just
+echoed into the mock payload — not stored.
 
 ## 7. Components, owners, and TDD tests
 
@@ -88,16 +108,23 @@ POST /api/submit  {ka, description, address, borough, apartment?, locationDetail
 | 4 | `/api/submit` (mock) | `app/submit.py`, `app/mapping.py` | Claude | KA→fields mapping resolves; payload has required fields; returns sr_number |
 | 5 | Eval harness | `scripts/eval_llm.py`, `data/eval-set.json` | Claude | accuracy computed correctly on a toy 2-item set |
 | 6 | Mapping table | `data/311-mapping.json` | Hermes | every demo KA maps to a complete {agency,problem,problemDetails,locationType} |
-| 7 | Frontend | `web/` (single page) | Hermes | manual UAT via Playwright: mic→match→form→submit→confirmation |
-| 8 | Tailscale exposure | run scripts | Claude | iPhone loads page, full flow works |
+| 7 | Frontend core (mic→match→**plain form**→submit→confirm) | `web/` | Hermes | manual UAT: full deterministic flow works (SAFETY NET — do first) |
+| 8 | CopilotKit runtime endpoint | `app/copilot.py` (`/api/copilotkit`) | Claude | runtime responds; streams agent field values |
+| 9 | CopilotKit generative-UI form | `web/` (CopilotKit hooks) | Hermes | agent-streamed form renders; falls back to plain form |
+| 10 | GPS auto-fill | `web/` (geolocation + reverse geocode) | Hermes | lat/long → address+borough populates fields |
+| 11 | Photo attach | `web/` + `/api/submit` `photo_b64` | Hermes/Claude | photo captured → base64 in submit payload |
+| 12 | Tailscale exposure | run scripts | Claude | iPhone loads page, full flow works |
 
 TDD discipline: backend = vertical slices, one test → one impl, tests hit public
 interfaces only, LLM tests use FakeBackend (no network). Frontend = pragmatic + Playwright UAT.
 
 ## 8. Dependencies / env
 
-- `requirements.txt` (Hermes owns): add `google-genai`. Already has `pinecone`, `fastapi`,
-  `uvicorn[standard]`, `langchain*`, `python-multipart`.
+- `requirements.txt` (Hermes owns): add `google-genai`, `copilotkit` (Python runtime SDK).
+  Already has `pinecone`, `fastapi`, `uvicorn[standard]`, `langchain*`, `python-multipart`.
+- Frontend (`web/`): React + Vite + `@copilotkit/react-core` + `@copilotkit/react-ui`
+  (generative UI). Web Speech API + `navigator.geolocation` are browser built-ins (no dep).
+  Reverse geocode: free Nominatim (`nominatim.openstreetmap.org/reverse`) — no key needed.
 - `.env`: has `PINECONE_API_KEY`, `GOOGLE_API_KEY`. **Add `GEMINI_API_KEY`** (same value)
   OR rely on backend fallback. ⚠️ `GOOGLE_API_KEY` value format (`AQ.Ab8...`) is unusual —
   **verify it authenticates with a 5-sec test call before building the Gemini backend.**
@@ -105,24 +132,52 @@ interfaces only, LLM tests use FakeBackend (no network). Frontend = pragmatic + 
 
 ## 9. Timeline (~240 min, 2 agents parallel)
 
-| Time | Claude | Hermes |
+| Time | Claude (worktree `../311-voice-claude`, branch `claude/backend`) | Hermes (worktree `../311-voice-hermes`, branch `hermes/frontend`) |
 |---|---|---|
-| 0:00–0:20 | verify Gemini key; ingest 2,084 → Pinecone; verify rerank | finalize `311-mapping.json`; scaffold `web/` |
-| 0:20–1:30 | `/api/match` + LLM abstraction + Gemini backend (TDD) | frontend: mic → results → form (against frozen contract w/ stub) |
-| 1:30–2:15 | `/api/submit` (TDD); start `llama-server` + SLM backend | wire frontend ↔ real API; confirmation screen |
-| 2:15–2:50 | eval harness; run SLM vs Gemini bake-off; pick winner | polish UI; Playwright UAT |
-| 2:50–3:20 | Tailscale exposure; iPhone end-to-end test | fix UAT issues |
-| 3:20–3:50 | stretch (whisper/SLM polish); rehearse demo | rehearse demo |
-| 3:50–4:00 | FREEZE + buffer | FREEZE + buffer |
+| 0:00–0:15 | set up worktrees+branches; verify Gemini key; ingest 2,084 → Pinecone | finalize `311-mapping.json`; scaffold `web/` (Vite) |
+| 0:15–1:15 | `/api/match` + LLM abstraction + Gemini backend (TDD) | frontend CORE: mic → results → **plain form** (vs stubbed API) |
+| 1:15–2:00 | `/api/submit` (TDD); start `llama-server` + SLM backend | **merge `claude/backend`→ test against real API**; confirmation screen |
+| 2:00–2:15 | **INTEGRATION CHECKPOINT: deterministic flow works end-to-end (safety net)** | same — verify plain flow on desktop |
+| 2:15–2:50 | eval harness; SLM-vs-Gemini bake-off; pick winner; `/api/copilotkit` | CopilotKit generative UI + GPS auto-fill + photo |
+| 2:50–3:20 | Tailscale exposure; iPhone end-to-end test | wire CopilotKit/GPS/photo ↔ backend; Playwright UAT |
+| 3:20–3:50 | merge both branches → main; help fix integration | rehearse demo on iPhone |
+| 3:50–4:00 | FREEZE on main + buffer | FREEZE + buffer |
 
-## 10. Coordination
+## 10. Git workflow (separate branches per agent)
+
+**Mechanism: git worktrees** (REQUIRED — two branches cannot be checked out in one working
+tree at once; worktrees give each agent its own directory sharing the one `.git`).
+
+```
+311-voice/            main  (integration branch; canonical comms/, PLAN.md, progress)
+311-voice-claude/     claude/backend   (Claude works here)
+311-voice-hermes/     hermes/frontend  (Hermes works here)
+```
+
+Setup (step 0, on approval):
+```
+git branch claude/backend && git branch hermes/frontend
+git worktree add ../311-voice-claude claude/backend
+git worktree add ../311-voice-hermes hermes/frontend
+```
+
+Rules:
+- Each agent commits only on their own branch, in their own worktree.
+- **`.env` and `models/` are gitignored** → they do NOT appear in new worktrees. Copy `.env`
+  into each worktree; symlink `models/` into `../311-voice-claude/` (Claude needs the SLM).
+- **Coordination files stay canonical on `main`**: `comms/log.md`, `.claude-progress.md`,
+  `PLAN.md`. Agents append to them via the main worktree (append-only → clean merges), not
+  on feature branches, to avoid divergence.
+- Integration: merge `claude/backend` → `main`, then Hermes merges `main` into
+  `hermes/frontend` to pick up the real API. Final: both → `main` by 3:50.
+- The frozen API contract (§6) is the merge seam — don't change it without a HANDOFF + ack.
+
+## 11. Coordination
 
 - Protocol: `comms/README.md`; log: `comms/log.md`; live state: `.claude-progress.md`.
-- CLAIM before editing shared files. The frozen API contract (§6) is the integration seam —
-  do not change it without a HANDOFF note + the other agent's ack.
-- Demo backend is chosen by the bake-off (§5), set via `LLM_BACKEND` env.
+- CLAIM before editing shared files. Demo backend chosen by bake-off (§5), set via `LLM_BACKEND`.
 
-## 11. Definition of done (demo)
+## 12. Definition of done (demo)
 
 Speak → correct service identified → form filled → mock SR# shown, **on the iPhone over
 Tailscale**, using whichever LLM backend won the bake-off. Pinecone visibly in the path
