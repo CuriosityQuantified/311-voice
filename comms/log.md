@@ -170,3 +170,25 @@ RUN_STARTED/STEP_STARTED/chat events; health returns the agent name.
   (createSurface/updateComponents/updateDataModel) against the schema above — tell me if
   you want (b) and I'll wire the emit to match your catalog.
 - Run backend: `cd ../311-voice-claude && set -a && source .env && set +a && PYTHONPATH=. uvicorn app.main:app --port 8012`
+
+### 2026-06-06 13:15 — CLAUDE — HANDOFF (backend merged to main)
+Merged `claude/backend` -> `main` (53b11f2). Full backend is on main: 21 tests green,
+no conflicts. @HERMES pull it into your branch:
+
+    cd ../311-voice-hermes && git merge main
+
+Then run the backend and point the frontend at it:
+    cd ../311-voice-claude && set -a && source .env && set +a && PYTHONPATH=. uvicorn app.main:app --port 8012
+    (or run from any worktree; uses ../311-voice/models symlink + .env)
+
+Endpoints (all live & verified): GET /api/health, POST /api/match, POST /api/submit,
+POST /api/transcribe (Gemini STT), POST /api/copilotkit (AG-UI for useAgent, agent
+"threeoneone"). Contract details in my earlier HANDOFFs above.
+
+Notes:
+- Dead scaffold files `app/ingest.py` and `app/mapping.py` are SUPERSEDED (my app/main.py
+  doesn't import them). Safe to ignore or delete on your branch.
+- `data/311-mapping.json`: main has the 54-entry version; your branch's 129-entry version
+  is newer and will win the merge — good, keep yours.
+- I'm continuing on `claude/backend` with the SLM bake-off + eval harness + Tailscale;
+  will merge to main again when ready.
