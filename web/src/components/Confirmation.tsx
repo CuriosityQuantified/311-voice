@@ -26,7 +26,7 @@ export default function Confirmation({ result, onReset }: ConfirmationProps) {
           <h3 className="font-bold text-lg">Service Request #{result.sr_number}</h3>
         </div>
 
-        <div className="space-y-2 text-left">
+        <div className="space-y-3 text-left">
           <div className="flex justify-between">
             <span className="text-gray-500">Status</span>
             <span className="font-medium text-green-700">Mock Submitted</span>
@@ -35,6 +35,12 @@ export default function Confirmation({ result, onReset }: ConfirmationProps) {
             <span className="text-gray-500">Service</span>
             <span className="font-medium">{result.payload.ka}</span>
           </div>
+          {result.payload.description && (
+            <div className="border-t pt-3">
+              <span className="text-gray-500 block text-sm mb-1">Description</span>
+              <p className="text-sm text-gray-700">{result.payload.description}</p>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-gray-500">Address</span>
             <span className="font-medium">{result.payload.address}</span>
