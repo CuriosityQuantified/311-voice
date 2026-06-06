@@ -1,15 +1,15 @@
 // =============================================================================
-// SHARED SCHEMA: CopilotKit useAgent Shared-State Contract
+// SHARED SCHEMA: REST Agent Shared-State Contract
 // =============================================================================
 // Single source of truth for the data shape shared between the backend agent
-// (LangChain + CopilotKit runtime) and the frontend (useAgent hook).
+// (LangChain) and the frontend (AgentStateBinder over fetch POST /api/agent).
 //
 // BOTH Hermes (frontend) and Claude (backend) must stay in sync with this file.
 // If you change this, update both the agent state definition AND the UI bindings.
 // =============================================================================
 
 // ---------------------------------------------------------------------------
-// Agent State (returned by useAgent)
+// Agent State (returned by POST /api/agent)
 // ---------------------------------------------------------------------------
 
 export type Screen = "mic" | "results" | "form" | "confirm";
@@ -46,24 +46,9 @@ export interface AgentState {
   form: FormDraft;
   submission: Submission;
   screen: Screen;
+  reply?: string;              // Agent's natural-language message to display
+  todos?: Array<{content: string; status: string}>; // Agent internal todo list
 }
-
-// ---------------------------------------------------------------------------
-// Agent Tool Names (backend-defined, in app/agent.py)
-// ---------------------------------------------------------------------------
-// The agent calls these tools to mutate state:
-//   - search_services(text)       → sets candidates, screen="results"
-//   - recommend_service(picked_ka, reasoning) → sets picked_ka, reasoning, emergency
-//   - update_form(ka?, description?, address?, borough?, apartment?, locationDetails?) → partial update
-//   - submit_service_request()    → sets submission, screen="confirm"
-// ---------------------------------------------------------------------------
-
-export const AGENT_TOOLS = {
-  SEARCH_SERVICES: "search_services",
-  RECOMMEND_SERVICE: "recommend_service",
-  UPDATE_FORM: "update_form",
-  SUBMIT_SERVICE_REQUEST: "submit_service_request",
-} as const;
 
 // ---------------------------------------------------------------------------
 // Default / empty state
