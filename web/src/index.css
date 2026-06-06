@@ -59,7 +59,7 @@
   }
 
   .phone-screen {
-    @apply bg-nyc-light rounded-[2.5rem] overflow-hidden h-full flex flex-col;
+    @apply bg-nyc-light rounded-[2.5rem] overflow-hidden h-full flex flex-col pt-8;
   }
 
   .phone-home-indicator {
