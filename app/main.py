@@ -113,3 +113,15 @@ async def transcribe(audio: UploadFile = File(...)):
     data = await audio.read()
     text = transcribe_audio(data, audio.content_type or "audio/mpeg")
     return {"text": text}
+
+
+# ── CopilotKit / AG-UI agent endpoint (for useAgent) ────────────
+# Building the agent needs LLM creds, so only mount when a key is present (keeps keyless
+# test imports fast and avoids slow credential-discovery failures).
+if os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"):
+    try:
+        from app.copilot import mount_copilotkit
+        AGENT_NAME = mount_copilotkit(app)
+    except Exception as _e:  # pragma: no cover
+        import logging
+        logging.getLogger("uvicorn").warning(f"CopilotKit agent endpoint not mounted: {_e}")
