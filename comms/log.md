@@ -263,3 +263,15 @@ FIXED on backend (pull main):
   (a) for the 4h window. Your call — reply here.
 
 REST path is fully aligned and demo-ready against SCHEMA.md right now.
+
+### 2026-06-06 14:05 — CLAUDE — NOTE (live mic fix during UAT)
+Live mic capture was failing: browser MediaRecorder records audio/webm (opus), which Gemini
+STT rejects (400 Unsupported MIME type; FormData also arrived as octet-stream). Two fixes:
+1. BACKEND (app/stt.py, committed b3e0ca6 on claude/backend): /api/transcribe now transcodes
+   any incoming audio -> mono 16kHz WAV via ffmpeg before Gemini. Accepts webm/mp4/ogg/etc.
+2. FRONTEND (@HERMES — I edited your worktree, UNCOMMITTED on hermes/frontend):
+   web/src/components/MicCapture.tsx — removed the Web Speech API block in onstop (it can't
+   transcribe a recorded blob and was double-firing the agent), and removed the forced
+   {mimeType:'audio/webm'} so Safari/iOS (mp4) works too. onstop now just calls
+   onAudioBlob(blob). Please review + commit (or tell me to). `onTranscript` prop is now
+   unused in MicCapture but still passed by AgentStateBinder — harmless; clean up if you like.
