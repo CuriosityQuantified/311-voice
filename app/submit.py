@@ -10,6 +10,11 @@ from __future__ import annotations
 import uuid
 
 
+def _normalize_borough(value: str) -> str:
+    """Frontend may send a code like 'STATEN_ISLAND'; NYC expects 'STATEN ISLAND'."""
+    return (value or "").replace("_", " ").strip().upper()
+
+
 def build_payload(submission: dict, mapping: dict) -> dict:
     m = mapping[submission["ka"]]  # KeyError on unmapped KA — caller surfaces 4xx
     return {
@@ -22,7 +27,7 @@ def build_payload(submission: dict, mapping: dict) -> dict:
         "description": "N/A",
         "additionalDetails": submission.get("description", ""),
         "fullAddress": submission.get("address", ""),
-        "siteBorough": submission.get("borough", ""),
+        "siteBorough": _normalize_borough(submission.get("borough", "")),
         "apartmentNumber": submission.get("apartment", ""),
         "locationDetails": submission.get("locationDetails", ""),
         # provenance

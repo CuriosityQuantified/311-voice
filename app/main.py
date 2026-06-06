@@ -95,6 +95,14 @@ def match(req: MatchReq):
     result = run_match(req.text, get_retriever(), get_backend())
     picked = next((c for c in result["candidates"] if c["ka"] == result["picked_ka"]), None)
     result["emergency"] = bool(picked and picked.get("classification") == "emergency")
+    # Pre-fill fields for the frontend form. The complaint IS the description; address/
+    # apartment/locationDetails come from GPS + the form (rarely reliable from short speech).
+    result["extracted_fields"] = {
+        "description": req.text,
+        "address": "",
+        "apartment": "",
+        "locationDetails": "",
+    }
     return result
 
 
