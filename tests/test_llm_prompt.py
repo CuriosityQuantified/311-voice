@@ -38,3 +38,17 @@ def test_parse_selection_handles_fenced_and_surrounded_json():
 def test_parse_selection_falls_back_on_unparseable_text():
     sel = parse_selection("I'm not sure, could you clarify?", CANDS)
     assert sel.picked_ka == "KA-01036"  # top-scored fallback, no crash
+
+
+def test_parse_selection_matches_ka_when_model_drops_the_prefix():
+    # The SLM (Qwen) often returns the numeric id without the "KA-" prefix; that is the
+    # correct candidate and must NOT be treated as a hallucination/fallback.
+    text = '{"picked_ka": "01093", "reasoning": "pothole", "confidence": 0.7}'
+    sel = parse_selection(text, CANDS)
+    assert sel.picked_ka == "KA-01093"  # normalized back to the real candidate id
+
+
+def test_parse_selection_matches_ka_case_insensitively():
+    text = '{"picked_ka": "ka-01036", "reasoning": "heat", "confidence": 0.7}'
+    sel = parse_selection(text, CANDS)
+    assert sel.picked_ka == "KA-01036"

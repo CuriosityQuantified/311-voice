@@ -10,8 +10,9 @@ CANDS = [
 def test_slm_backend_wires_prompt_through_model_to_selection():
     captured = {}
 
-    def fake_generate(prompt: str) -> str:
+    def fake_generate(prompt: str, kas: list[str]) -> str:
         captured["prompt"] = prompt
+        captured["kas"] = kas
         return 'thinking...\n{"picked_ka": "KA-01036", "reasoning": "no heat", "confidence": 0.8}'
 
     backend = SLMBackend(generate=fake_generate)
@@ -19,3 +20,4 @@ def test_slm_backend_wires_prompt_through_model_to_selection():
 
     assert sel.picked_ka == "KA-01036"
     assert "freezing, no heat at all" in captured["prompt"]
+    assert captured["kas"] == ["KA-01036", "KA-01093"]  # candidate ids passed for the enum

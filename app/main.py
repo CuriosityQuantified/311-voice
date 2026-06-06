@@ -2,6 +2,7 @@
 
   GET  /api/health     -> {ok, llm_backend}
   POST /api/match      {text} -> {candidates, picked_ka, reasoning, emergency}
+  POST /api/agent      {text, thread_id} -> full agent shared state  [tool-calling agent over REST]
   POST /api/submit     {ka, description, address, borough, apartment?, ...} -> {sr_number, payload, status}
   POST /api/transcribe (multipart audio) -> {text}    [Gemini STT]
 
@@ -13,8 +14,10 @@ from __future__ import annotations
 
 import json
 import os
+import io
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -34,6 +37,17 @@ app.add_middleware(
 _retriever = None
 _backend = None
 _mapping = None
+_agent = None
+
+
+def get_agent():
+    """The full tool-calling agent (search/recommend/update_form/submit + middleware +
+    skills), built once. Needs LLM creds, so only call when a key is present."""
+    global _agent
+    if _agent is None:
+        from app.agent import build_agent
+        _agent = build_agent(get_mapping())
+    return _agent
 
 
 def get_retriever():
@@ -72,6 +86,11 @@ class MatchReq(BaseModel):
     text: str
 
 
+class AgentReq(BaseModel):
+    text: str
+    thread_id: str
+
+
 class SubmitReq(BaseModel):
     ka: str
     description: str = ""
@@ -80,6 +99,11 @@ class SubmitReq(BaseModel):
     apartment: str | None = None
     locationDetails: str | None = None
     photo_b64: str | None = None
+
+
+class TTSReq(BaseModel):
+    text: str
+    voice: str = "Aoede"
 
 
 # ── routes ──────────────────────────────────────────────────────
@@ -106,6 +130,61 @@ def match(req: MatchReq):
     return result
 
 
+def _text_of(content) -> str:
+    """Flatten a message's content to plain text. Gemini (via LangChain) returns AI content
+    as a LIST of blocks like [{'type':'text','text':...}], not a bare string — extract those."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for b in content:
+            if isinstance(b, str):
+                parts.append(b)
+            elif isinstance(b, dict) and b.get("type") == "text" and b.get("text"):
+                parts.append(b["text"])
+        return " ".join(parts).strip()
+    return ""
+
+
+def _last_ai_text(messages) -> str:
+    """The agent's most recent natural-language reply (skip tool-call-only turns). This is
+    what the frontend reads aloud via /api/tts, so it must be the spoken text."""
+    for m in reversed(messages or []):
+        if getattr(m, "type", None) == "ai":
+            txt = _text_of(getattr(m, "content", None))
+            if txt.strip():
+                return txt
+    return ""
+
+
+@app.post("/api/agent")
+def agent_turn(req: AgentReq):
+    """Run ONE turn of the tool-calling agent and return its shared state. The agent's tool
+    calls (recommend_service / update_form / submit_service_request) drive `screen` + `form`
+    + `candidates`, so the frontend just re-renders from the returned state — this is the
+    REST-transport equivalent of CopilotKit shared state. Multi-turn via `thread_id`
+    (the agent's checkpointer persists state across calls)."""
+    if not req.text.strip():
+        raise HTTPException(status_code=422, detail="text is required")
+    from app.agent import make_start_message
+    agent = get_agent()
+    cfg = {"configurable": {"thread_id": req.thread_id}}
+    prior = agent.get_state(cfg).values  # {} on a brand-new thread
+    content = req.text if prior.get("messages") else make_start_message(req.text)
+    out = agent.invoke({"messages": [{"role": "user", "content": content}]}, cfg)
+    return {
+        "transcript": out.get("transcript", ""),
+        "candidates": out.get("candidates", []),
+        "picked_ka": out.get("picked_ka", ""),
+        "reasoning": out.get("reasoning", ""),
+        "emergency": out.get("emergency", False),
+        "form": out.get("form", {}),
+        "submission": out.get("submission", {}),
+        "screen": out.get("screen", "mic"),
+        "reply": _last_ai_text(out.get("messages")),
+    }
+
+
 @app.post("/api/submit")
 def submit(req: SubmitReq):
     try:
@@ -121,6 +200,25 @@ async def transcribe(audio: UploadFile = File(...)):
     data = await audio.read()
     text = transcribe_audio(data, audio.content_type or "audio/mpeg")
     return {"text": text}
+
+
+@app.post("/api/tts")
+async def tts(req: TTSReq):
+    """Generate TTS audio from the agent's reply text using Gemini 3.1 Flash TTS.
+    Returns a WAV file that the browser can play directly.
+    """
+    if not req.text.strip():
+        raise HTTPException(status_code=422, detail="text is required")
+    from app.tts import generate_tts
+    try:
+        wav_bytes = generate_tts(req.text, voice=req.voice)
+        return StreamingResponse(
+            io.BytesIO(wav_bytes),
+            media_type="audio/wav",
+            headers={"Content-Disposition": "inline; filename=reply.wav"},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")
 
 
 # ── CopilotKit / AG-UI agent endpoint (for useAgent) ────────────

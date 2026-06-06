@@ -18,7 +18,17 @@ _MAPPING_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "311-mappi
 def mount_copilotkit(app, path: str = "/api/copilotkit", mapping: dict | None = None,
                      model: str = "google_genai:gemini-3.1-flash-lite") -> str:
     """Mount the agent as an AG-UI FastAPI endpoint. Returns the agent name the frontend
-    references in useAgent({ name })."""
+    references in useCoAgent/useAgent({ name }).
+
+    NOTE (2026-06-06): this serves the **AG-UI protocol** (RunAgentInput in, AG-UI event
+    stream out). `@copilotkit/react-core` talks the CopilotKit *runtime* protocol to its
+    `runtimeUrl`, which is a DIFFERENT shape — so pointing react-core's runtimeUrl straight
+    at this path returns 422 on its handshake. The frontend must reach this endpoint through
+    a CopilotKit runtime configured with an AG-UI HttpAgent (see comms note). We cannot use
+    the Python `copilotkit` SDK runtime (CopilotKitRemoteEndpoint + add_fastapi_endpoint)
+    here: the installed copilotkit==0.1.72 requires agents exposing dict_repr/execute/
+    get_state, but ag-ui-langgraph==0.0.21's LangGraphAGUIAgent only implements run() —
+    the two are version-incompatible."""
     from ag_ui_langgraph import LangGraphAgent, add_langgraph_fastapi_endpoint
 
     if mapping is None:

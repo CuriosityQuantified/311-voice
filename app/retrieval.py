@@ -13,7 +13,7 @@ NAMESPACE = os.environ.get("PINECONE_NAMESPACE", "nyc-311")
 RERANK_MODEL = "bge-reranker-v2-m3"
 
 
-def make_retriever(top_k: int = 10, top_n: int = 5):
+def make_retriever(top_k: int = 40, top_n: int = 5):
     from pinecone import Pinecone
     pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
     index = pc.Index(INDEX_NAME)

@@ -12,8 +12,9 @@ def test_gemini_backend_wires_prompt_through_model_to_selection():
     (injected here), and parses the model's JSON into a Selection. No network."""
     captured = {}
 
-    def fake_generate(prompt: str) -> str:
+    def fake_generate(prompt: str, kas: list[str]) -> str:
         captured["prompt"] = prompt
+        captured["kas"] = kas
         return '{"picked_ka": "KA-01093", "reasoning": "pothole", "confidence": 0.7}'
 
     backend = GeminiBackend(generate=fake_generate)
@@ -21,3 +22,4 @@ def test_gemini_backend_wires_prompt_through_model_to_selection():
 
     assert sel.picked_ka == "KA-01093"
     assert "hole in the road" in captured["prompt"]   # complaint reached the model
+    assert captured["kas"] == ["KA-01036", "KA-01093"]  # candidate ids passed for the enum
