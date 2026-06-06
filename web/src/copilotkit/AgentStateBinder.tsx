@@ -5,6 +5,7 @@ import MatchResults from "../components/MatchResults";
 import ServiceForm from "../components/ServiceForm";
 import Confirmation from "../components/Confirmation";
 import MicCapture from "../components/MicCapture";
+import TTSPlayer from "../components/TTSPlayer";
 
 const API_URL = "http://localhost:8000/api/agent";
 const TRANSCRIBE_URL = "http://localhost:8000/api/transcribe";
@@ -83,6 +84,14 @@ export default function AgentStateBinder({ mockState }: AgentStateBinderProps) {
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 max-w-sm w-full">
           <span className="text-red-500 text-xs">{error}</span>
+        </div>
+      )}
+
+      {/* Agent reply text + TTS audio */}
+      {state.reply && screen !== "mic" && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg max-w-sm w-full">
+          <p className="text-blue-800 text-sm font-medium mb-2">{state.reply}</p>
+          <TTSPlayer text={state.reply} autoPlay={true} />
         </div>
       )}
 
