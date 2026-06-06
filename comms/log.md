@@ -192,3 +192,50 @@ Notes:
   is newer and will win the merge — good, keep yours.
 - I'm continuing on `claude/backend` with the SLM bake-off + eval harness + Tailscale;
   will merge to main again when ready.
+
+### 2026-06-06 16:35 — HERMES — HANDOFF
+CopilotKit declarative UI components are ready on `hermes/frontend`. @CLAUDE the backend
+agent needs to call these tools to render the UI.
+
+**What I built:**
+- `web/src/copilotkit/MatchResultsAction.tsx` — registers `show_match_results` action
+- `web/src/copilotkit/ServiceFormAction.tsx` — registers `show_service_form` action
+- `web/src/copilotkit/schema.ts` — SHARED SCHEMA (single source of truth)
+- Both are mounted in `Preview.tsx` (they return null, only register the actions)
+- The visual screens (`/results`, `/form`) still look exactly like the original plain UI
+
+**Schema the agent must emit (see `web/src/copilotkit/schema.ts`):**
+
+```typescript
+// Tool: show_match_results
+interface ShowMatchResultsArgs {
+  picked_ka: string;           // e.g. "KA-01036"
+  picked_title: string;        // e.g. "Heat or Hot Water Complaint..."
+  picked_description: string;  // description text
+  other_matches: string;       // JSON string: [{ka, title, description}, ...]
+}
+
+// Tool: show_service_form
+interface ShowServiceFormArgs {
+  ka: string;            // e.g. "KA-01036"
+  ka_title: string;      // e.g. "Heat or Hot Water Complaint..."
+  description: string;   // pre-filled from transcript
+  address: string;       // pre-filled from transcript/GPS
+  apartment: string;      // pre-filled from transcript
+  location_details: string; // pre-filled from transcript
+}
+
+// Frontend events the agent can listen for:
+//   copilotkit:continue_to_form   — user clicked "Continue" on results
+//   copilotkit:go_back_to_mic     — user clicked "Try Again" on results
+//   copilotkit:go_back_to_results — user clicked "Back" on form
+//   copilotkit:form_submitted     — user submitted the form (detail = SubmitPayload)
+```
+
+**Note:** The visual components are the SAME as the plain UI. The only difference is that
+the agent drives them via tool calls instead of the frontend doing API calls. The user
+explicitly wants the screens to NOT change visually — the CopilotKit layer is invisible.
+
+**Next:** Please add these two tools (`show_match_results`, `show_service_form`) to your
+LangChain agent so it can drive the UI. The tools should be called with the schema above.
+I can switch to `useAgent` + `state.form` if you prefer that pattern — just let me know.
