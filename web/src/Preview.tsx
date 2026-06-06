@@ -76,6 +76,8 @@ function FormPreview() {
         onSubmit={() => alert('Would submit')}
         onBack={() => alert('Would go back')}
         isSubmitting={false}
+        onFieldTranscript={(field, text) => alert(`Field: ${field}\nTranscript: ${text}`)}
+        onGeneralTranscript={(text) => alert(`General: ${text}`)}
       />
     </PreviewWrapper>
   );

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Camera, Loader2, Send } from 'lucide-react';
+import { MapPin, Camera, Loader2, Send, Mic, Square } from 'lucide-react';
 import type { SubmitPayload } from '../types';
 import { BOROUGHS } from '../types';
+import FieldMic from './FieldMic';
 
 interface ServiceFormProps {
   pickedKa: string;
@@ -16,6 +17,8 @@ interface ServiceFormProps {
   onSubmit: (payload: SubmitPayload) => void;
   onBack: () => void;
   isSubmitting: boolean;
+  onFieldTranscript?: (field: string, transcript: string) => void;
+  onGeneralTranscript?: (transcript: string) => void;
 }
 
 export default function ServiceForm({
@@ -25,6 +28,8 @@ export default function ServiceForm({
   onSubmit,
   onBack,
   isSubmitting,
+  onFieldTranscript,
+  onGeneralTranscript,
 }: ServiceFormProps) {
   const [description, setDescription] = useState(formData.description || '');
   const [address, setAddress] = useState(formData.address || '');
@@ -34,6 +39,7 @@ export default function ServiceForm({
   const [photo, setPhoto] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState('');
+  const [generalMicRecording, setGeneralMicRecording] = useState(false);
 
   // Sync with external formData changes (e.g., from agent updates)
   useEffect(() => {
@@ -106,6 +112,43 @@ export default function ServiceForm({
     });
   };
 
+  const handleFieldTranscript = (field: string) => (transcript: string) => {
+    if (onFieldTranscript && transcript) {
+      onFieldTranscript(field, transcript);
+    }
+  };
+
+  const handleGeneralMic = () => {
+    if (generalMicRecording) {
+      setGeneralMicRecording(false);
+      return;
+    }
+    setGeneralMicRecording(true);
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const text = event.results[0][0].transcript;
+        if (onGeneralTranscript && text) {
+          onGeneralTranscript(text);
+        }
+        setGeneralMicRecording(false);
+      };
+      recognition.onerror = () => {
+        setGeneralMicRecording(false);
+      };
+      recognition.onend = () => {
+        setGeneralMicRecording(false);
+      };
+      recognition.start();
+    } else {
+      setGeneralMicRecording(false);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-xl">
       <div className="text-center mb-2">
@@ -118,14 +161,22 @@ export default function ServiceForm({
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Description
         </label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          required
-          rows={3}
-          className="input-field"
-          placeholder="Describe the issue in detail..."
-        />
+        <div className="flex gap-2 items-start">
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            rows={3}
+            className="input-field flex-1"
+            placeholder="Describe the issue in detail..."
+          />
+          <div className="flex-shrink-0 pt-1">
+            <FieldMic
+              onTranscript={handleFieldTranscript('description')}
+              size="sm"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Address + GPS */}
@@ -133,7 +184,7 @@ export default function ServiceForm({
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Address
         </label>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <input
             type="text"
             value={address}
@@ -141,6 +192,10 @@ export default function ServiceForm({
             required
             className="input-field flex-1"
             placeholder="123 Main St"
+          />
+          <FieldMic
+            onTranscript={handleFieldTranscript('address')}
+            size="sm"
           />
           <button
             type="button"
@@ -165,19 +220,25 @@ export default function ServiceForm({
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Borough
         </label>
-        <select
-          value={borough}
-          onChange={(e) => setBorough(e.target.value)}
-          required
-          className="input-field"
-        >
-          <option value="">Select borough...</option>
-          {BOROUGHS.map((b) => (
-            <option key={b.code} value={b.code}>
-              {b.name}
-            </option>
-          ))}
-        </select>
+        <div className="flex gap-2 items-center">
+          <select
+            value={borough}
+            onChange={(e) => setBorough(e.target.value)}
+            required
+            className="input-field flex-1"
+          >
+            <option value="">Select borough...</option>
+            {BOROUGHS.map((b) => (
+              <option key={b.code} value={b.code}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+          <FieldMic
+            onTranscript={handleFieldTranscript('borough')}
+            size="sm"
+          />
+        </div>
       </div>
 
       {/* Apartment */}
@@ -185,13 +246,19 @@ export default function ServiceForm({
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Apartment / Unit (optional)
         </label>
-        <input
-          type="text"
-          value={apartment}
-          onChange={(e) => setApartment(e.target.value)}
-          className="input-field"
-          placeholder="4B"
-        />
+        <div className="flex gap-2 items-center">
+          <input
+            type="text"
+            value={apartment}
+            onChange={(e) => setApartment(e.target.value)}
+            className="input-field flex-1"
+            placeholder="4B"
+          />
+          <FieldMic
+            onTranscript={handleFieldTranscript('apartment')}
+            size="sm"
+          />
+        </div>
       </div>
 
       {/* Location details */}
@@ -199,13 +266,19 @@ export default function ServiceForm({
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Location Details (optional)
         </label>
-        <input
-          type="text"
-          value={locationDetails}
-          onChange={(e) => setLocationDetails(e.target.value)}
-          className="input-field"
-          placeholder="Near the northeast corner, by the mailbox"
-        />
+        <div className="flex gap-2 items-center">
+          <input
+            type="text"
+            value={locationDetails}
+            onChange={(e) => setLocationDetails(e.target.value)}
+            className="input-field flex-1"
+            placeholder="Near the northeast corner, by the mailbox"
+          />
+          <FieldMic
+            onTranscript={handleFieldTranscript('locationDetails')}
+            size="sm"
+          />
+        </div>
       </div>
 
       {/* Photo */}
@@ -238,6 +311,31 @@ export default function ServiceForm({
             className="mt-2 w-32 h-32 object-cover rounded-lg border"
           />
         )}
+      </div>
+
+      {/* General mic at bottom */}
+      <div className="flex flex-col items-center gap-2 mt-2">
+        <button
+          type="button"
+          onClick={handleGeneralMic}
+          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+            generalMicRecording
+              ? 'bg-red-500 text-white animate-pulse'
+              : 'bg-nyc-orange text-white hover:bg-orange-600'
+          }`}
+          title={generalMicRecording ? 'Tap to stop recording' : 'Tap to describe changes'}
+        >
+          {generalMicRecording ? (
+            <Square className="w-6 h-6" />
+          ) : (
+            <Mic className="w-6 h-6" />
+          )}
+        </button>
+        <p className="text-xs text-gray-500">
+          {generalMicRecording
+            ? 'Recording... describe any changes needed'
+            : 'Tap to describe changes'}
+        </p>
       </div>
 
       {/* Actions */}

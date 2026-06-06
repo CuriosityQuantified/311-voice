@@ -67,6 +67,12 @@ export default function AgentStateBinder({ mockState }: AgentStateBinderProps) {
         }}
         onBack={() => sendMessage("Go back to the results.")}
         isSubmitting={false}
+        onFieldTranscript={(field, transcript) => {
+          sendMessage(`Update the ${field} field: ${transcript}`);
+        }}
+        onGeneralTranscript={(transcript) => {
+          sendMessage(`General modification: ${transcript}`);
+        }}
       />
     );
   }
