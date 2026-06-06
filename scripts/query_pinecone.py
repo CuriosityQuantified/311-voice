@@ -60,8 +60,8 @@ def main():
     hits = res["result"]["hits"]
     print(f"\nQuery: {args.query!r}\nTop {len(hits)} after rerank ({RERANK_MODEL}):\n")
     for h in hits:
-        f = h["fields"]
-        print(f"  {h['_score']:.4f}  {h['_id']}  {f.get('title')}  [{f.get('classification')}]")
+        f = h.fields or {}
+        print(f"  {h.score:.4f}  {h.id}  {f.get('title')}  [{f.get('classification')}]")
         print(f"          {f.get('description')}")
 
 

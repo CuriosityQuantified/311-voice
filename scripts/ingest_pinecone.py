@@ -46,6 +46,23 @@ def load_articles():
         return json.load(f)
 
 
+def build_records(articles):
+    """Build the exact records upserted to Pinecone. `text` is the field that gets
+    embedded server-side (field_map text->text). Single source of truth: the dump
+    script reuses this so the local mirror matches the index exactly."""
+    records = []
+    for a in articles:
+        records.append({
+            "_id": a["id"],
+            "text": f"{a['title']}. {a['description']}".strip(),  # embedded field
+            "title": a["title"],
+            "description": a["description"],
+            "categories": a.get("categories", []),
+            "classification": a.get("classification", "unlabeled"),
+        })
+    return records
+
+
 def main():
     api_key = os.environ.get("PINECONE_API_KEY")
     if not api_key:
@@ -81,21 +98,12 @@ def main():
 
     index = pc.Index(INDEX_NAME)
 
-    records = []
-    for a in articles:
-        records.append({
-            "_id": a["id"],
-            "text": f"{a['title']}. {a['description']}".strip(),  # embedded field
-            "title": a["title"],
-            "description": a["description"],
-            "categories": a.get("categories", []),
-            "classification": a.get("classification", "unlabeled"),
-        })
+    records = build_records(articles)
 
     print(f"Upserting {len(records)} text records to namespace '{NAMESPACE}' "
           f"in batches of {BATCH} (Pinecone embeds server-side) ...")
     for i in range(0, len(records), BATCH):
-        index.upsert_records(NAMESPACE, records[i:i + BATCH])
+        index.upsert_records(namespace=NAMESPACE, records=records[i:i + BATCH])
         print(f"  upserted {min(i + BATCH, len(records))}/{len(records)}")
 
     time.sleep(5)  # give the index a moment to reflect counts
