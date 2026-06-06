@@ -23,6 +23,7 @@ from typing import Annotated, Optional
 
 from langchain.agents import AgentState, create_agent
 from langchain.agents.middleware import (
+    AgentMiddleware,
     ClearToolUsesEdit,
     ContextEditingMiddleware,
     ModelCallLimitMiddleware,
@@ -135,6 +136,79 @@ def _candidate_dicts(candidates: list[Candidate]) -> list[dict]:
     return [c.__dict__ for c in candidates]
 
 
+_CONTINUE_PHRASES = ("continue", "go to the form", "proceed to the form")
+
+
+def _message_text(msg) -> str:
+    """Best-effort plain-text extraction from a langchain message object (or a dict).
+    Content may be a str or a list of content blocks ({"type": "text", "text": ...})."""
+    content = getattr(msg, "content", None)
+    if content is None and isinstance(msg, dict):
+        content = msg.get("content")
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict):
+                parts.append(block.get("text") or block.get("content") or "")
+        return " ".join(p for p in parts if p)
+    return ""
+
+
+def _last_human_text(messages: list) -> str:
+    """Return the text of the most recent human message, or '' if there is none."""
+    for msg in reversed(messages or []):
+        msg_type = getattr(msg, "type", None)
+        if msg_type is None and isinstance(msg, dict):
+            msg_type = msg.get("type") or msg.get("role")
+        if msg_type == "human":
+            return _message_text(msg)
+    return ""
+
+
+def seed_form_on_continue(state: dict) -> dict | None:
+    """Deterministically seed the initial form draft and flip to the form screen when the
+    user clicks Continue on the results screen.
+
+    Fires ONLY when ALL hold:
+      * state screen == "results"
+      * state has a non-empty picked_ka
+      * the most recent human message signals continue intent
+
+    Returns the state-update dict to merge, or None if it should not fire. Idempotent: once
+    screen becomes "form" the screen=="results" guard prevents it from firing again."""
+    if (state.get("screen") or "") != "results":
+        return None
+    picked_ka = state.get("picked_ka") or ""
+    if not picked_ka:
+        return None
+    text = _last_human_text(state.get("messages")).lower()
+    if not any(phrase in text for phrase in _CONTINUE_PHRASES):
+        return None
+    current_form = state.get("form") or {}
+    seeded = apply_form_updates(current_form, {
+        "ka": picked_ka,
+        "description": current_form.get("description") or state.get("transcript", ""),
+    })
+    return {"form": seeded, "screen": "form"}
+
+
+class ContinueToFormMiddleware(AgentMiddleware):
+    """Guarantees the initial form-fill + screen transition when the user clicks Continue.
+
+    Runs BEFORE the model each turn. When the guard in `seed_form_on_continue` passes, it
+    merges the seeded form and screen="form" into agent state so the transition does not
+    depend on the LLM choosing to call update_form."""
+
+    state_schema = FormState
+
+    def before_model(self, state, runtime) -> dict | None:
+        return seed_form_on_continue(state)
+
+
 def build_middleware(summary_model="google_genai:gemini-3.1-flash-lite") -> list:
     """The agent's built-in middleware harness (LangChain v1). Order matters: PII guards
     input first; summarization/context-editing keep the window small; the limits and retries
@@ -147,6 +221,7 @@ def build_middleware(summary_model="google_genai:gemini-3.1-flash-lite") -> list
         a `fraction` trigger would not resolve).
     """
     return [
+        ContinueToFormMiddleware(),
         PIIMiddleware("email", strategy="redact", apply_to_input=True),
         PIIMiddleware("credit_card", strategy="mask", apply_to_input=True),
         PIIMiddleware("ip", strategy="redact", apply_to_input=True),

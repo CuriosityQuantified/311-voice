@@ -1,6 +1,7 @@
 from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
+from langchain_core.messages import HumanMessage
 
-from app.agent import load_skill, SYSTEM, build_middleware
+from app.agent import load_skill, SYSTEM, build_middleware, seed_form_on_continue
 from app.skills import SKILLS
 
 # A fake summary model so build_middleware() never reaches out for Google credentials in
@@ -66,3 +67,47 @@ def test_search_services_has_its_own_tool_call_limit():
     # one global limiter + one scoped to search_services
     scoped = [m for m in limiters if getattr(m, "tool_name", None) == "search_services"]
     assert len(scoped) == 1
+
+
+def test_continue_to_form_middleware_registered_first():
+    mws = build_middleware(summary_model=FAKE_SUMMARY)
+    assert type(mws[0]).__name__ == "ContinueToFormMiddleware"
+
+
+# --- slice 4: deterministic Continue -> form seeding -------------------------
+
+def test_seed_form_on_continue_fires_and_seeds_form_from_transcript():
+    state = {
+        "screen": "results",
+        "picked_ka": "KA-01036",
+        "transcript": "no heat in my apartment",
+        "form": {"ka": "KA-01036"},
+        "messages": [HumanMessage(content="Continue to the form")],
+    }
+    upd = seed_form_on_continue(state)
+    assert upd is not None
+    assert upd["screen"] == "form"
+    assert upd["form"]["ka"] == "KA-01036"
+    assert upd["form"]["description"] == "no heat in my apartment"
+
+
+def test_seed_form_on_continue_does_not_fire_without_continue_intent():
+    state = {
+        "screen": "results",
+        "picked_ka": "KA-01036",
+        "transcript": "no heat in my apartment",
+        "form": {"ka": "KA-01036"},
+        "messages": [HumanMessage(content="actually pick the other one")],
+    }
+    assert seed_form_on_continue(state) is None
+
+
+def test_seed_form_on_continue_does_not_fire_on_mic_screen():
+    state = {
+        "screen": "mic",
+        "picked_ka": "KA-01036",
+        "transcript": "no heat in my apartment",
+        "form": {"ka": "KA-01036"},
+        "messages": [HumanMessage(content="Continue to the form")],
+    }
+    assert seed_form_on_continue(state) is None
