@@ -1,5 +1,4 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
-import { CopilotChat } from '@copilotkit/react-ui';
 import App from './App';
 import MicCapture from './components/MicCapture';
 import MatchResults from './components/MatchResults';
@@ -107,17 +106,14 @@ function MicPreview() {
 function ResultsPreview() {
   return (
     <PreviewWrapper>
-      <div className="w-full h-full flex flex-col">
-        <MatchResultsAction />
-        <div className="flex-1 min-h-0">
-          <CopilotChat
-            labels={{
-              title: '311 Results',
-              initial: 'We found the right service for your complaint.',
-            }}
-          />
-        </div>
-      </div>
+      {/* Mount CopilotKit action registration (no visual output) */}
+      <MatchResultsAction />
+      {/* Original visual UI */}
+      <MatchResults
+        result={mockMatchResult}
+        onContinue={() => alert('Would go to form')}
+        onBack={() => alert('Would go back to mic')}
+      />
     </PreviewWrapper>
   );
 }
@@ -125,17 +121,17 @@ function ResultsPreview() {
 function FormPreview() {
   return (
     <PreviewWrapper>
-      <div className="w-full h-full flex flex-col">
-        <ServiceFormAction />
-        <div className="flex-1 min-h-0">
-          <CopilotChat
-            labels={{
-              title: '311 Form',
-              initial: 'Please fill out the details for your complaint.',
-            }}
-          />
-        </div>
-      </div>
+      {/* Mount CopilotKit action registration (no visual output) */}
+      <ServiceFormAction />
+      {/* Original visual UI */}
+      <ServiceForm
+        pickedKa="KA-01036"
+        kaTitle="Heat or Hot Water Complaint in a Residential Building"
+        extractedFields={mockMatchResult.extracted_fields}
+        onSubmit={() => alert('Would submit')}
+        onBack={() => alert('Would go back')}
+        isSubmitting={false}
+      />
     </PreviewWrapper>
   );
 }
