@@ -36,6 +36,8 @@ def test_match_returns_contract_shape(monkeypatch):
     assert body["picked_ka"] == "KA-01036"
     assert body["reasoning"]
     assert body["emergency"] is False
+    # extracted_fields drives the frontend form pre-fill (shared schema)
+    assert body["extracted_fields"]["description"] == "no heat in my apartment"
 
 
 def test_match_rejects_empty_text():

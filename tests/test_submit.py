@@ -29,6 +29,14 @@ def test_build_payload_rejects_unmapped_ka():
         build_payload({"ka": "KA-99999", "description": "x"}, MAPPING)
 
 
+def test_build_payload_normalizes_borough_underscore_to_nyc_value():
+    # Frontend sends "STATEN_ISLAND"; NYC's API expects "STATEN ISLAND".
+    sub = {"ka": "KA-01036", "description": "x", "address": "1 Bay St",
+           "borough": "STATEN_ISLAND"}
+    p = build_payload(sub, MAPPING)
+    assert p["siteBorough"] == "STATEN ISLAND"
+
+
 def test_mock_submit_returns_sr_number_and_payload():
     sub = {"ka": "KA-01036", "description": "no heat", "address": "1 Broadway",
            "borough": "MANHATTAN"}
