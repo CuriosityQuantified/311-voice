@@ -82,7 +82,7 @@ export default function App() {
         
         {/* Screen content */}
         <div className="phone-screen">
-          <main className="flex-1 flex flex-col items-center justify-center p-4 overflow-y-auto">
+          <main className="flex-1 flex flex-col items-center justify-start p-4 overflow-y-auto">
             {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 max-w-sm w-full">
                 <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
