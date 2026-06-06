@@ -9,10 +9,13 @@
     "preview": "vite preview --host 0.0.0.0 --port 5173"
   },
   "dependencies": {
+    "@copilotkit/react-core": "^1.59.5",
+    "@copilotkit/react-ui": "^1.59.5",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.17.0"
+    "react-router-dom": "^7.17.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",

@@ -1,9 +1,12 @@
 import { HashRouter, Routes, Route } from 'react-router-dom';
+import { CopilotChat } from '@copilotkit/react-ui';
 import App from './App';
 import MicCapture from './components/MicCapture';
 import MatchResults from './components/MatchResults';
 import ServiceForm from './components/ServiceForm';
 import Confirmation from './components/Confirmation';
+import MatchResultsAction from './copilotkit/MatchResultsAction';
+import ServiceFormAction from './copilotkit/ServiceFormAction';
 import type { MatchResponse, SubmitResponse } from './types';
 
 const mockMatchResult: MatchResponse = {
@@ -104,11 +107,17 @@ function MicPreview() {
 function ResultsPreview() {
   return (
     <PreviewWrapper>
-      <MatchResults
-        result={mockMatchResult}
-        onContinue={() => alert('Would go to form')}
-        onBack={() => alert('Would go back to mic')}
-      />
+      <div className="w-full h-full flex flex-col">
+        <MatchResultsAction />
+        <div className="flex-1 min-h-0">
+          <CopilotChat
+            labels={{
+              title: '311 Results',
+              initial: 'We found the right service for your complaint.',
+            }}
+          />
+        </div>
+      </div>
     </PreviewWrapper>
   );
 }
@@ -116,14 +125,17 @@ function ResultsPreview() {
 function FormPreview() {
   return (
     <PreviewWrapper>
-      <ServiceForm
-        pickedKa="KA-01036"
-        kaTitle="Heat or Hot Water Complaint in a Residential Building"
-        extractedFields={mockMatchResult.extracted_fields}
-        onSubmit={() => alert('Would submit')}
-        onBack={() => alert('Would go back')}
-        isSubmitting={false}
-      />
+      <div className="w-full h-full flex flex-col">
+        <ServiceFormAction />
+        <div className="flex-1 min-h-0">
+          <CopilotChat
+            labels={{
+              title: '311 Form',
+              initial: 'Please fill out the details for your complaint.',
+            }}
+          />
+        </div>
+      </div>
     </PreviewWrapper>
   );
 }
