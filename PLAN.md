@@ -27,10 +27,16 @@ net. CopilotKit generative UI is layered **on top of** that working slice. If Co
 overruns, we demo with the plain form — the core demo is never put at risk by it. GPS and
 photos are low-risk add-ons to the form.
 
-## 3. Voice decision
+## 3. Voice / STT decision
 
-Primary = **browser Web Speech API** (works in iOS Safari, zero backend, reliable in minutes).
-Stretch = whisper.cpp local STT as the "fully local" upgrade.
+**STT model = Gemini audio** (multimodal), used for BOTH the 200-file accuracy test and
+the live demo, so tested accuracy reflects the demo. Browser records audio (MediaRecorder)
+→ backend → Gemini transcribes. (Web Speech API dropped — it can't transcribe the test
+files; whisper.cpp excluded per user.) Note: STT is therefore cloud, not local.
+
+Test set: `data/voice-files/` = 200 `sample_NNN.mp3` (edge-tts, 6 voices) + `sample_NNN.txt`
+ground-truth transcripts, generated from category-labeled templates (heat/noise/pothole/
+trash/rats/…), so we can derive expected category per sample.
 
 ## 4. Architecture / data flow
 
@@ -73,11 +79,13 @@ def select_service(complaint: str, candidates: list[Candidate]) -> Selection
 
 ### Bake-off methodology
 
-- `data/eval-set.json` — ~25 hand-authored `{complaint, expected_ka}` pairs across common
-  NYC complaints (heat, trash, pothole, noise, rats, mold, street light, parking, ...).
-- `scripts/eval_llm.py` — for each eval item: run real match → candidates, then have each
-  backend pick; compare picked_ka to expected_ka. Report **top-1 accuracy + avg latency**
-  per backend, plus a per-item table.
+- Eval set = `data/voice-files/` (200 samples). Derive `expected_category` per sample from
+  the generator templates; map category → acceptable KA(s).
+- **STT accuracy**: mp3 → Gemini STT → compare to `sample_NNN.txt` (exact / word-error).
+- **End-to-end LLM accuracy**: transcript → real match (Pinecone) → each backend picks →
+  compare picked_ka's category to `expected_category`.
+- `scripts/eval_llm.py` reports, per backend, **top-1 accuracy + avg latency** + per-item
+  table. STT accuracy reported once (single STT model).
 - **Decision rule (default, override anytime):** use **SLM** for the demo if it scores
   **≥80% absolute AND within 10 points of Gemini**; otherwise **Gemini**.
 
