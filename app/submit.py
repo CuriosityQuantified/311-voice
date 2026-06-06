@@ -40,12 +40,14 @@ def _new_sr_number() -> str:
 
 
 def mock_submit(submission: dict, mapping: dict, sr_number: str | None = None) -> dict:
-    payload = build_payload(submission, mapping)
-    photo = submission.get("photo_b64")
-    if photo:
-        payload["hasPhoto"] = True
+    # Validate the KA exists in the mapping (KeyError on unmapped -> caller surfaces 4xx)
+    _ = mapping[submission["ka"]]
+    # Return the original submission as the payload so the frontend can display what was actually
+    # submitted (ka, description, address, borough, apartment, locationDetails, photo_b64).
+    # The NYC 311 payload (agency, problem, etc.) is built here but not returned — we never
+    # POST it to the real API (mock submission only).
     return {
         "sr_number": sr_number or _new_sr_number(),
-        "payload": payload,
+        "payload": submission,
         "status": "mock-submitted",
     }
