@@ -1,56 +1,1129 @@
 {
-  "KA-01036": {"agency": "HPD", "problem": "Heat/Hot Water", "problemDetails": "Apartment Only", "locationType": "Apartment"},
-  "KA-01788": {"agency": "DSNY", "problem": "Missed Collection", "problemDetails": "All Materials", "locationType": "Street"},
-  "KA-01089": {"agency": "DOT", "problem": "Street Light Condition", "problemDetails": "Street Light Out", "locationType": "Street"},
-  "KA-01093": {"agency": "DOT", "problem": "Street Condition", "problemDetails": "Pothole", "locationType": "Street"},
-  "KA-02235": {"agency": "DOT", "problem": "Sidewalk Condition", "problemDetails": "Broken Sidewalk", "locationType": "Sidewalk"},
-  "KA-01107": {"agency": "DOHMH", "problem": "Rodent", "problemDetails": "Rat Sighting", "locationType": "Street"},
-  "KA-02262": {"agency": "HPD", "problem": "Mold", "problemDetails": "Apartment Only", "locationType": "Apartment"},
-  "KA-01017": {"agency": "NYPD", "problem": "Noise", "problemDetails": "Residential", "locationType": "Apartment"},
-  "KA-01236": {"agency": "HPD", "problem": "Bed Bug", "problemDetails": "Apartment Only", "locationType": "Apartment"},
-  "KA-01034": {"agency": "FDNY", "problem": "Fire Hydrant", "problemDetails": "Leaking", "locationType": "Street"},
-  "KA-01035": {"agency": "FDNY", "problem": "Fire Hydrant", "problemDetails": "Damaged", "locationType": "Street"},
-  "KA-01048": {"agency": "HPD", "problem": "Electrical", "problemDetails": "Apartment Only", "locationType": "Apartment"},
-  "KA-01062": {"agency": "NYPD", "problem": "Blocked Driveway", "problemDetails": "Vehicle Blocking Driveway", "locationType": "Street"},
-  "KA-01063": {"agency": "DOT", "problem": "Street Sign", "problemDetails": "Missing Sign", "locationType": "Street"},
-  "KA-01064": {"agency": "DOT", "problem": "Street Sign", "problemDetails": "Sign Request", "locationType": "Street"},
-  "KA-01068": {"agency": "DEP", "problem": "Sewer", "problemDetails": "Leak or Odor Indoors", "locationType": "Apartment"},
-  "KA-01074": {"agency": "HPD", "problem": "Maintenance", "problemDetails": "Apartment Only", "locationType": "Apartment"},
-  "KA-01076": {"agency": "NYCHA", "problem": "Maintenance", "problemDetails": "Public Housing", "locationType": "Apartment"},
-  "KA-01083": {"agency": "DOT", "problem": "Curb Condition", "problemDetails": "Damaged Curb", "locationType": "Street"},
-  "KA-01084": {"agency": "DEP", "problem": "Catch Basin", "problemDetails": "Clogged", "locationType": "Street"},
-  "KA-01085": {"agency": "NYPD", "problem": "Noise", "problemDetails": "Bar/Club", "locationType": "Commercial"},
-  "KA-01086": {"agency": "NYPD", "problem": "Noise", "problemDetails": "House of Worship", "locationType": "Commercial"},
-  "KA-01087": {"agency": "NYPD", "problem": "Noise", "problemDetails": "Animal", "locationType": "Residential"},
-  "KA-01088": {"agency": "NYPD", "problem": "Noise", "problemDetails": "Park", "locationType": "Park"},
-  "KA-01091": {"agency": "DOB", "problem": "Noise", "problemDetails": "Construction", "locationType": "Street"},
-  "KA-01092": {"agency": "NYPD", "problem": "Noise", "problemDetails": "Street/Sidewalk", "locationType": "Street"},
-  "KA-01095": {"agency": "DOT", "problem": "Street Condition", "problemDetails": "Street Repair", "locationType": "Street"},
-  "KA-01096": {"agency": "NYPD", "problem": "Noise", "problemDetails": "Garbage Truck", "locationType": "Street"},
-  "KA-01099": {"agency": "DOT", "problem": "Street Condition", "problemDetails": "Resurfacing Request", "locationType": "Street"},
-  "KA-01100": {"agency": "DOT", "problem": "Pavement Marking", "problemDetails": "Faded/Missing", "locationType": "Street"},
-  "KA-01102": {"agency": "NYPD", "problem": "Noise", "problemDetails": "Vehicle", "locationType": "Street"},
-  "KA-01106": {"agency": "DOT", "problem": "Highway Condition", "problemDetails": "Pothole", "locationType": "Highway"},
-  "KA-01109": {"agency": "DOHMH", "problem": "Animal Bite", "problemDetails": "Animal Bite", "locationType": "Street"},
-  "KA-01111": {"agency": "DOHMH", "problem": "Food Safety", "problemDetails": "Food Poisoning", "locationType": "Commercial"},
-  "KA-01119": {"agency": "DOB", "problem": "Architect/Engineer", "problemDetails": "Complaint", "locationType": "Commercial"},
-  "KA-01123": {"agency": "DOB", "problem": "Asbestos", "problemDetails": "Work Notification", "locationType": "Commercial"},
-  "KA-01125": {"agency": "DOHMH", "problem": "Assisted Living", "problemDetails": "Facility Complaint", "locationType": "Commercial"},
-  "KA-01128": {"agency": "DCA", "problem": "Auto Repair", "problemDetails": "Complaint", "locationType": "Commercial"},
-  "KA-01131": {"agency": "DCA", "problem": "Bank", "problemDetails": "Complaint", "locationType": "Commercial"},
-  "KA-01143": {"agency": "DCA", "problem": "Charity", "problemDetails": "Complaint", "locationType": "Commercial"},
-  "KA-01147": {"agency": "NYPD", "problem": "Fraud", "problemDetails": "City Claim Fraud", "locationType": "Street"},
-  "KA-01148": {"agency": "NYPD", "problem": "Comptroller", "problemDetails": "Complaint", "locationType": "Commercial"},
-  "KA-01154": {"agency": "NYPD", "problem": "Marshal", "problemDetails": "Complaint", "locationType": "Commercial"},
-  "KA-01158": {"agency": "NYPD", "problem": "City Vehicle", "problemDetails": "Complaint", "locationType": "Street"},
-  "KA-01986": {"agency": "NYPD", "problem": "Illegal Parking", "problemDetails": "Blocked Hydrant", "locationType": "Street"},
-  "KA-01014": {"agency": "MTA", "problem": "Bus/Subway", "problemDetails": "Complaint", "locationType": "Street"},
-  "KA-01019": {"agency": "DPR", "problem": "Vandalism", "problemDetails": "Park", "locationType": "Park"},
-  "KA-01042": {"agency": "HPD", "problem": "Tenant Harassment", "problemDetails": "Apartment Only", "locationType": "Apartment"},
-  "KA-01051": {"agency": "NYPD", "problem": "Animal", "problemDetails": "Unleashed Dog", "locationType": "Park"},
-  "KA-01058": {"agency": "DCA", "problem": "Cable", "problemDetails": "Complaint", "locationType": "Residential"},
-  "KA-01060": {"agency": "DPR", "problem": "Park Maintenance", "problemDetails": "Complaint", "locationType": "Park"},
-  "KA-01061": {"agency": "DOB", "problem": "POPS", "problemDetails": "Complaint", "locationType": "Commercial"},
-  "KA-01067": {"agency": "DOE", "problem": "School Maintenance", "problemDetails": "Complaint", "locationType": "School"},
-  "KA-01072": {"agency": "DOT", "problem": "Bike Rack", "problemDetails": "Complaint", "locationType": "Street"}
+  "mappings": [
+    {
+      "ka": "KA-01036",
+      "title": "Heat or Hot Water Complaint in a Residential Building",
+      "agency": "HPD",
+      "problem": "Heat or Hot Water",
+      "problemDetails": "No Heat",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01017",
+      "title": "Noise from Neighbor",
+      "agency": "NYPD",
+      "problem": "Noise",
+      "problemDetails": "Noise from Neighbor",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01085",
+      "title": "Noise from Bar, Club, or Restaurant",
+      "agency": "NYPD",
+      "problem": "Noise",
+      "problemDetails": "Noise from Commercial Establishment",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01086",
+      "title": "Noise from House of Worship",
+      "agency": "NYPD",
+      "problem": "Noise",
+      "problemDetails": "Noise from House of Worship",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01091",
+      "title": "Noise from Construction",
+      "agency": "DEP",
+      "problem": "Noise",
+      "problemDetails": "Noise from Construction",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01092",
+      "title": "Noise from Street or Sidewalk",
+      "agency": "NYPD",
+      "problem": "Noise",
+      "problemDetails": "Noise from Street or Sidewalk",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01093",
+      "title": "Pothole or Cave-In on Street",
+      "agency": "DOT",
+      "problem": "Street Condition",
+      "problemDetails": "Pothole",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01106",
+      "title": "Pothole or Cave-In on Highway",
+      "agency": "DOT",
+      "problem": "Street Condition",
+      "problemDetails": "Pothole on Highway",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01504",
+      "title": "Trash, Recycling, or Compost Disposal Complaint",
+      "agency": "DSNY",
+      "problem": "Sanitation",
+      "problemDetails": "Missed Collection",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01107",
+      "title": "Rat or Mouse Complaint",
+      "agency": "HPD",
+      "problem": "Rodent",
+      "problemDetails": "Rat or Mouse Sighting",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01084",
+      "title": "Catch Basin Complaint",
+      "agency": "DEP",
+      "problem": "Sewer",
+      "problemDetails": "Catch Basin Clogged or Broken",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01510",
+      "title": "Sewer Backup",
+      "agency": "DEP",
+      "problem": "Sewer",
+      "problemDetails": "Sewer Backup",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-02128",
+      "title": "Dry Weather Sewage Discharge Complaint",
+      "agency": "DEP",
+      "problem": "Sewer",
+      "problemDetails": "Dry Weather Sewage Discharge",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01234",
+      "title": "Water Leak on Street or Sidewalk",
+      "agency": "DEP",
+      "problem": "Water",
+      "problemDetails": "Water Leak on Street",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01509",
+      "title": "Water Leak in a Building",
+      "agency": "DEP",
+      "problem": "Water",
+      "problemDetails": "Water Leak in Building",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01034",
+      "title": "Fire Hydrant Complaint",
+      "agency": "FDNY",
+      "problem": "Fire Hydrant",
+      "problemDetails": "Fire Hydrant Defective or Leaking",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01035",
+      "title": "Fire Hydrant Request",
+      "agency": "FDNY",
+      "problem": "Fire Hydrant",
+      "problemDetails": "Fire Hydrant Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01037",
+      "title": "Homeless Outreach Assistance",
+      "agency": "DHS",
+      "problem": "Homeless Person Assistance",
+      "problemDetails": "Homeless Outreach",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01039",
+      "title": "Homeless Shelter Complaint",
+      "agency": "DHS",
+      "problem": "Homeless Shelter",
+      "problemDetails": "Homeless Shelter Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01062",
+      "title": "Blocked Driveway",
+      "agency": "NYPD",
+      "problem": "Blocked Driveway",
+      "problemDetails": "Blocked Driveway",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01240",
+      "title": "Parking Meter Complaint or Request",
+      "agency": "DOT",
+      "problem": "Parking Meter",
+      "problemDetails": "Parking Meter Complaint",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01986",
+      "title": "Illegal Parking",
+      "agency": "NYPD",
+      "problem": "Illegal Parking",
+      "problemDetails": "Illegal Parking",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01083",
+      "title": "Curb or Driveway Complaint",
+      "agency": "DOT",
+      "problem": "Curb Condition",
+      "problemDetails": "Curb or Driveway Complaint",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01048",
+      "title": "Electrical Complaint",
+      "agency": "HPD",
+      "problem": "Electrical",
+      "problemDetails": "Electrical Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01068",
+      "title": "Sewage Leak or Odor Indoors",
+      "agency": "DEP",
+      "problem": "Sewer",
+      "problemDetails": "Sewage Leak or Odor Indoors",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-02262",
+      "title": "Mold Complaint",
+      "agency": "HPD",
+      "problem": "Mold",
+      "problemDetails": "Mold Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-02015",
+      "title": "Elevator or Escalator Complaint",
+      "agency": "DOB",
+      "problem": "Elevator",
+      "problemDetails": "Elevator or Escalator Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-02070",
+      "title": "Graffiti",
+      "agency": "DOB",
+      "problem": "Graffiti",
+      "problemDetails": "Graffiti on Building",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-02130",
+      "title": "Abandoned Vehicle",
+      "agency": "NYPD",
+      "problem": "Abandoned Vehicle",
+      "problemDetails": "Abandoned Vehicle",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01063",
+      "title": "Street Sign Complaint",
+      "agency": "DOT",
+      "problem": "Street Sign",
+      "problemDetails": "Street Sign Complaint",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01064",
+      "title": "Street Sign Request",
+      "agency": "DOT",
+      "problem": "Street Sign",
+      "problemDetails": "Street Sign Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01797",
+      "title": "Building Construction Complaint",
+      "agency": "DOB",
+      "problem": "Construction",
+      "problemDetails": "Building Construction Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01047",
+      "title": "Pedestrian Signal Complaint or Request",
+      "agency": "DOT",
+      "problem": "Pedestrian Signal",
+      "problemDetails": "Pedestrian Signal Complaint",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01058",
+      "title": "Cable Complaint",
+      "agency": "DOITT",
+      "problem": "Cable",
+      "problemDetails": "Cable Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01060",
+      "title": "Park Maintenance Complaint",
+      "agency": "DPR",
+      "problem": "Park Maintenance",
+      "problemDetails": "Park Maintenance Complaint",
+      "locationType": "Park",
+      "demo": true
+    },
+    {
+      "ka": "KA-01067",
+      "title": "School Maintenance Complaint",
+      "agency": "DOE",
+      "problem": "School Maintenance",
+      "problemDetails": "School Maintenance Complaint",
+      "locationType": "School",
+      "demo": true
+    },
+    {
+      "ka": "KA-01054",
+      "title": "Pay Phone Complaint",
+      "agency": "DOITT",
+      "problem": "Pay Phone",
+      "problemDetails": "Pay Phone Complaint",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01051",
+      "title": "Unleashed Dog",
+      "agency": "DPR",
+      "problem": "Animal",
+      "problemDetails": "Unleashed Dog",
+      "locationType": "Park",
+      "demo": true
+    },
+    {
+      "ka": "KA-01061",
+      "title": "Privately Owned Public Space (POPS) Complaint",
+      "agency": "DOB",
+      "problem": "POPS",
+      "problemDetails": "POPS Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01071",
+      "title": "Bus Stop Shelters",
+      "agency": "DOT",
+      "problem": "Bus Stop",
+      "problemDetails": "Bus Stop Shelter Complaint",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01042",
+      "title": "Tenant Harassment",
+      "agency": "HPD",
+      "problem": "Tenant Harassment",
+      "problemDetails": "Tenant Harassment",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01021",
+      "title": "City Agency Record or FOIL Request",
+      "agency": "NYC",
+      "problem": "FOIL",
+      "problemDetails": "City Agency Record or FOIL Request",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01020",
+      "title": "Apostille Document Authentication",
+      "agency": "DOS",
+      "problem": "Apostille",
+      "problemDetails": "Apostille Document Authentication",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01014",
+      "title": "Buses and Subways",
+      "agency": "MTA",
+      "problem": "Transit",
+      "problemDetails": "Buses and Subways",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01019",
+      "title": "Vandalism in a Park",
+      "agency": "DPR",
+      "problem": "Vandalism",
+      "problemDetails": "Vandalism in a Park",
+      "locationType": "Park",
+      "demo": true
+    },
+    {
+      "ka": "KA-01073",
+      "title": "HPD Building Information and Code Enforcement Borough Service Centers",
+      "agency": "HPD",
+      "problem": "Building Information",
+      "problemDetails": "HPD Building Information",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01041",
+      "title": "Eviction Prevention and Homebase",
+      "agency": "HPD",
+      "problem": "Eviction Prevention",
+      "problemDetails": "Eviction Prevention and Homebase",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01050",
+      "title": "Car Service Lost and Found",
+      "agency": "TLC",
+      "problem": "Lost and Found",
+      "problemDetails": "Car Service Lost and Found",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01013",
+      "title": "Taxi Lost and Found",
+      "agency": "TLC",
+      "problem": "Lost and Found",
+      "problemDetails": "Taxi Lost and Found",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01018",
+      "title": "Staten Island Ferry Lost and Found",
+      "agency": "DOT",
+      "problem": "Lost and Found",
+      "problemDetails": "Staten Island Ferry Lost and Found",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01069",
+      "title": "School Food Complaint",
+      "agency": "DOE",
+      "problem": "School Food",
+      "problemDetails": "School Food Complaint",
+      "locationType": "School",
+      "demo": false
+    },
+    {
+      "ka": "KA-01070",
+      "title": "School Health Complaint",
+      "agency": "DOE",
+      "problem": "School Health",
+      "problemDetails": "School Health Complaint",
+      "locationType": "School",
+      "demo": false
+    },
+    {
+      "ka": "KA-01072",
+      "title": "Bike Rack Complaint",
+      "agency": "DOT",
+      "problem": "Bike Rack",
+      "problemDetails": "Bike Rack Complaint",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01090",
+      "title": "Noise from Store or Business",
+      "agency": "NYPD",
+      "problem": "Noise",
+      "problemDetails": "Noise from Store or Business",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01087",
+      "title": "Noise from Street",
+      "agency": "NYPD",
+      "problem": "Noise",
+      "problemDetails": "Noise from Street",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01088",
+      "title": "Noise from Vehicle",
+      "agency": "NYPD",
+      "problem": "Noise",
+      "problemDetails": "Noise from Vehicle",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01089",
+      "title": "Noise from Air Conditioner",
+      "agency": "DEP",
+      "problem": "Noise",
+      "problemDetails": "Noise from Air Conditioner",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01094",
+      "title": "Street Light Complaint",
+      "agency": "DOT",
+      "problem": "Street Light",
+      "problemDetails": "Street Light Complaint",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01095",
+      "title": "Street Light Request",
+      "agency": "DOT",
+      "problem": "Street Light",
+      "problemDetails": "Street Light Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01096",
+      "title": "Damaged Tree",
+      "agency": "DPR",
+      "problem": "Tree",
+      "problemDetails": "Damaged Tree",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01097",
+      "title": "Dead Tree",
+      "agency": "DPR",
+      "problem": "Tree",
+      "problemDetails": "Dead Tree",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01098",
+      "title": "Tree Planting Request",
+      "agency": "DPR",
+      "problem": "Tree",
+      "problemDetails": "Tree Planting Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01099",
+      "title": "Tree Pruning Request",
+      "agency": "DPR",
+      "problem": "Tree",
+      "problemDetails": "Tree Pruning Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01100",
+      "title": "Tree Root Damage",
+      "agency": "DPR",
+      "problem": "Tree",
+      "problemDetails": "Tree Root Damage",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01101",
+      "title": "Illegal Tree Damage",
+      "agency": "DPR",
+      "problem": "Tree",
+      "problemDetails": "Illegal Tree Damage",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01102",
+      "title": "New Tree Request",
+      "agency": "DPR",
+      "problem": "Tree",
+      "problemDetails": "New Tree Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01103",
+      "title": "Sidewalk Condition Complaint",
+      "agency": "DOT",
+      "problem": "Sidewalk",
+      "problemDetails": "Sidewalk Condition Complaint",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01104",
+      "title": "Sidewalk Condition Request",
+      "agency": "DOT",
+      "problem": "Sidewalk",
+      "problemDetails": "Sidewalk Condition Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01105",
+      "title": "Snow or Ice on Street",
+      "agency": "DSNY",
+      "problem": "Snow or Ice",
+      "problemDetails": "Snow or Ice on Street",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01108",
+      "title": "Snow or Ice on Sidewalk",
+      "agency": "DSNY",
+      "problem": "Snow or Ice",
+      "problemDetails": "Snow or Ice on Sidewalk",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01109",
+      "title": "Air Quality",
+      "agency": "DEP",
+      "problem": "Air Quality",
+      "problemDetails": "Air Quality Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01110",
+      "title": "Asbestos Complaint",
+      "agency": "DEP",
+      "problem": "Asbestos",
+      "problemDetails": "Asbestos Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01111",
+      "title": "Lead Complaint",
+      "agency": "HPD",
+      "problem": "Lead",
+      "problemDetails": "Lead Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01112",
+      "title": "Indoor Air Quality",
+      "agency": "HPD",
+      "problem": "Indoor Air Quality",
+      "problemDetails": "Indoor Air Quality Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01113",
+      "title": "Standing Water",
+      "agency": "DEP",
+      "problem": "Standing Water",
+      "problemDetails": "Standing Water",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01114",
+      "title": "Water Quality",
+      "agency": "DEP",
+      "problem": "Water Quality",
+      "problemDetails": "Water Quality Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01115",
+      "title": "Illegal Dumping",
+      "agency": "DEP",
+      "problem": "Illegal Dumping",
+      "problemDetails": "Illegal Dumping",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01116",
+      "title": "Manhole Cover",
+      "agency": "DEP",
+      "problem": "Manhole",
+      "problemDetails": "Manhole Cover Complaint",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01117",
+      "title": "Water Meter Complaint",
+      "agency": "DEP",
+      "problem": "Water Meter",
+      "problemDetails": "Water Meter Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01118",
+      "title": "General Construction Complaint",
+      "agency": "DOB",
+      "problem": "Construction",
+      "problemDetails": "General Construction Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01119",
+      "title": "Unsafe Building Condition",
+      "agency": "DOB",
+      "problem": "Unsafe Building",
+      "problemDetails": "Unsafe Building Condition",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01120",
+      "title": "Building Violation",
+      "agency": "DOB",
+      "problem": "Building Violation",
+      "problemDetails": "Building Violation",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01121",
+      "title": "Illegal Conversion",
+      "agency": "DOB",
+      "problem": "Illegal Conversion",
+      "problemDetails": "Illegal Conversion",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01122",
+      "title": "Working Without Permit",
+      "agency": "DOB",
+      "problem": "Working Without Permit",
+      "problemDetails": "Working Without Permit",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01123",
+      "title": "Plumbing Complaint",
+      "agency": "HPD",
+      "problem": "Plumbing",
+      "problemDetails": "Plumbing Complaint",
+      "locationType": "Address",
+      "demo": true
+    },
+    {
+      "ka": "KA-01124",
+      "title": "Window Guard Complaint",
+      "agency": "HPD",
+      "problem": "Window Guard",
+      "problemDetails": "Window Guard Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01125",
+      "title": "Non-Emergency Police Matter",
+      "agency": "NYPD",
+      "problem": "Non-Emergency",
+      "problemDetails": "Non-Emergency Police Matter",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01126",
+      "title": "Illegal Fireworks",
+      "agency": "NYPD",
+      "problem": "Illegal Fireworks",
+      "problemDetails": "Illegal Fireworks",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01127",
+      "title": "Drug Activity",
+      "agency": "NYPD",
+      "problem": "Drug Activity",
+      "problemDetails": "Drug Activity",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01128",
+      "title": "Graffiti on Property",
+      "agency": "NYPD",
+      "problem": "Graffiti",
+      "problemDetails": "Graffiti on Property",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01129",
+      "title": "Traffic Signal Complaint",
+      "agency": "DOT",
+      "problem": "Traffic Signal",
+      "problemDetails": "Traffic Signal Complaint",
+      "locationType": "Street",
+      "demo": true
+    },
+    {
+      "ka": "KA-01131",
+      "title": "Traffic Signal Request",
+      "agency": "DOT",
+      "problem": "Traffic Signal",
+      "problemDetails": "Traffic Signal Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01132",
+      "title": "Speed Limit Request",
+      "agency": "DOT",
+      "problem": "Speed Limit",
+      "problemDetails": "Speed Limit Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01133",
+      "title": "Speed Hump Request",
+      "agency": "DOT",
+      "problem": "Speed Hump",
+      "problemDetails": "Speed Hump Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01134",
+      "title": "Parking Sign Request",
+      "agency": "DOT",
+      "problem": "Parking Sign",
+      "problemDetails": "Parking Sign Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01135",
+      "title": "Crosswalk Request",
+      "agency": "DOT",
+      "problem": "Crosswalk",
+      "problemDetails": "Crosswalk Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01136",
+      "title": "One Way Street Request",
+      "agency": "DOT",
+      "problem": "One Way Street",
+      "problemDetails": "One Way Street Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01137",
+      "title": "Stop Sign Request",
+      "agency": "DOT",
+      "problem": "Stop Sign",
+      "problemDetails": "Stop Sign Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01138",
+      "title": "No Parking Sign Request",
+      "agency": "DOT",
+      "problem": "No Parking Sign",
+      "problemDetails": "No Parking Sign Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01139",
+      "title": "No Standing Sign Request",
+      "agency": "DOT",
+      "problem": "No Standing Sign",
+      "problemDetails": "No Standing Sign Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01140",
+      "title": "No Truck Sign Request",
+      "agency": "DOT",
+      "problem": "No Truck Sign",
+      "problemDetails": "No Truck Sign Request",
+      "locationType": "Street",
+      "demo": false
+    },
+    {
+      "ka": "KA-01141",
+      "title": "Fire Alarm Complaint",
+      "agency": "FDNY",
+      "problem": "Fire Alarm",
+      "problemDetails": "Fire Alarm Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01142",
+      "title": "Sprinkler Complaint",
+      "agency": "FDNY",
+      "problem": "Sprinkler",
+      "problemDetails": "Sprinkler Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01143",
+      "title": "Smoke Detector Complaint",
+      "agency": "FDNY",
+      "problem": "Smoke Detector",
+      "problemDetails": "Smoke Detector Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01144",
+      "title": "Carbon Monoxide Detector Complaint",
+      "agency": "FDNY",
+      "problem": "Carbon Monoxide Detector",
+      "problemDetails": "Carbon Monoxide Detector Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01145",
+      "title": "Illegal Fire Alarm",
+      "agency": "FDNY",
+      "problem": "Illegal Fire Alarm",
+      "problemDetails": "Illegal Fire Alarm",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01146",
+      "title": "Illegal Sprinkler",
+      "agency": "FDNY",
+      "problem": "Illegal Sprinkler",
+      "problemDetails": "Illegal Sprinkler",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01147",
+      "title": "Illegal Smoke Detector",
+      "agency": "FDNY",
+      "problem": "Illegal Smoke Detector",
+      "problemDetails": "Illegal Smoke Detector",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01148",
+      "title": "Illegal Carbon Monoxide Detector",
+      "agency": "FDNY",
+      "problem": "Illegal Carbon Monoxide Detector",
+      "problemDetails": "Illegal Carbon Monoxide Detector",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01149",
+      "title": "Fire Escape Complaint",
+      "agency": "FDNY",
+      "problem": "Fire Escape",
+      "problemDetails": "Fire Escape Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01150",
+      "title": "Fire Escape Request",
+      "agency": "FDNY",
+      "problem": "Fire Escape",
+      "problemDetails": "Fire Escape Request",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01151",
+      "title": "Fire Exit Complaint",
+      "agency": "FDNY",
+      "problem": "Fire Exit",
+      "problemDetails": "Fire Exit Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01152",
+      "title": "Fire Exit Request",
+      "agency": "FDNY",
+      "problem": "Fire Exit",
+      "problemDetails": "Fire Exit Request",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01153",
+      "title": "Fire Door Complaint",
+      "agency": "FDNY",
+      "problem": "Fire Door",
+      "problemDetails": "Fire Door Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01154",
+      "title": "Fire Door Request",
+      "agency": "FDNY",
+      "problem": "Fire Door",
+      "problemDetails": "Fire Door Request",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01155",
+      "title": "Fire Standpipe Complaint",
+      "agency": "FDNY",
+      "problem": "Fire Standpipe",
+      "problemDetails": "Fire Standpipe Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01156",
+      "title": "Fire Standpipe Request",
+      "agency": "FDNY",
+      "problem": "Fire Standpipe",
+      "problemDetails": "Fire Standpipe Request",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01157",
+      "title": "Fire Sprinkler Complaint",
+      "agency": "FDNY",
+      "problem": "Fire Sprinkler",
+      "problemDetails": "Fire Sprinkler Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01158",
+      "title": "Fire Sprinkler Request",
+      "agency": "FDNY",
+      "problem": "Fire Sprinkler",
+      "problemDetails": "Fire Sprinkler Request",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01159",
+      "title": "Fire Pump Complaint",
+      "agency": "FDNY",
+      "problem": "Fire Pump",
+      "problemDetails": "Fire Pump Complaint",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01160",
+      "title": "Fire Pump Request",
+      "agency": "FDNY",
+      "problem": "Fire Pump",
+      "problemDetails": "Fire Pump Request",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01161",
+      "title": "Fire Alarm Inspection",
+      "agency": "FDNY",
+      "problem": "Fire Alarm Inspection",
+      "problemDetails": "Fire Alarm Inspection",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01162",
+      "title": "Sprinkler Inspection",
+      "agency": "FDNY",
+      "problem": "Sprinkler Inspection",
+      "problemDetails": "Sprinkler Inspection",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01163",
+      "title": "Smoke Detector Inspection",
+      "agency": "FDNY",
+      "problem": "Smoke Detector Inspection",
+      "problemDetails": "Smoke Detector Inspection",
+      "locationType": "Address",
+      "demo": false
+    },
+    {
+      "ka": "KA-01164",
+      "title": "Carbon Monoxide Detector Inspection",
+      "agency": "FDNY",
+      "problem": "Carbon Monoxide Detector Inspection",
+      "problemDetails": "Carbon Monoxide Detector Inspection",
+      "locationType": "Address",
+      "demo": false
+    }
+  ]
 }
