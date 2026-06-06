@@ -16,3 +16,4 @@ models/
 # Transient
 data/fetch.log
 .DS_Store
+models
