@@ -26,7 +26,6 @@ export default function MatchResults({ result, onContinue, onBack }: MatchResult
               {picked?.title || 'Recommended Service'}
             </h3>
             <p className="text-gray-700 mt-1">{picked?.description}</p>
-            <p className="text-sm text-gray-500 mt-2">{result.reasoning}</p>
           </div>
         </div>
       </div>
@@ -45,9 +44,7 @@ export default function MatchResults({ result, onContinue, onBack }: MatchResult
                 <Building2 className="w-5 h-5 text-gray-400 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{c.title}</p>
-                  <p className="text-xs text-gray-500">
-                    Score: {(c.score * 100).toFixed(1)}%
-                  </p>
+                  <p className="text-xs text-gray-500">{c.description}</p>
                 </div>
               </div>
             ))}
