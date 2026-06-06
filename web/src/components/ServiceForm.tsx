@@ -68,12 +68,18 @@ export default function ServiceForm({
             ? `${addr.house_number} ${addr.road || ''}`
             : addr.road || '';
           setAddress(street);
-          const boroName = addr.borough || addr.city || addr.county || '';
-          const matched = BOROUGHS.find(
-            (b) =>
-              boroName.toLowerCase().includes(b.name.toLowerCase()) ||
-              (b.name === 'The Bronx' && boroName.toLowerCase().includes('bronx'))
-          );
+          
+          // Try to extract borough from multiple Nominatim fields
+          const boroName = addr.borough || addr.city || addr.county || addr.suburb || '';
+          const displayName = data.display_name || '';
+          const searchText = `${boroName} ${displayName}`.toLowerCase();
+          
+          const matched = BOROUGHS.find((b) => {
+            const nameLower = b.name.toLowerCase();
+            return searchText.includes(nameLower) ||
+              (b.name === 'The Bronx' && searchText.includes('bronx')) ||
+              (b.name === 'Staten Island' && searchText.includes('staten island'));
+          });
           if (matched) setBorough(matched.code);
         } catch (e) {
           setGpsError('Could not reverse geocode');
@@ -363,4 +369,15 @@ export default function ServiceForm({
       </div>
     </form>
   );
+}
+
+// TypeScript declarations for Web Speech API
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+  interface SpeechRecognitionEvent extends Event {
+    results: SpeechRecognitionResultList;
+  }
 }
