@@ -26,6 +26,13 @@ def test_system_prompt_advertises_the_skills():
     assert "load_skill" in SYSTEM
 
 
+def test_system_prompt_instructs_voice_friendly_replies():
+    # replies are read aloud by TTS -> must be short, conversational, no markdown
+    s = SYSTEM.lower()
+    assert "read aloud" in s or "text-to-speech" in s
+    assert "markdown" in s          # explicitly forbids markdown/bullets in the spoken reply
+
+
 # --- slice 3: middleware factory ---------------------------------------------
 
 def _by_type(mws):

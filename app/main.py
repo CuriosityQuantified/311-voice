@@ -14,8 +14,10 @@ from __future__ import annotations
 
 import json
 import os
+import io
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -99,6 +101,11 @@ class SubmitReq(BaseModel):
     photo_b64: str | None = None
 
 
+class TTSReq(BaseModel):
+    text: str
+    voice: str = "Aoede"
+
+
 # ── routes ──────────────────────────────────────────────────────
 @app.get("/api/health")
 def health():
@@ -123,12 +130,30 @@ def match(req: MatchReq):
     return result
 
 
+def _text_of(content) -> str:
+    """Flatten a message's content to plain text. Gemini (via LangChain) returns AI content
+    as a LIST of blocks like [{'type':'text','text':...}], not a bare string — extract those."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for b in content:
+            if isinstance(b, str):
+                parts.append(b)
+            elif isinstance(b, dict) and b.get("type") == "text" and b.get("text"):
+                parts.append(b["text"])
+        return " ".join(parts).strip()
+    return ""
+
+
 def _last_ai_text(messages) -> str:
-    """The agent's most recent natural-language reply (skip tool-call-only turns)."""
+    """The agent's most recent natural-language reply (skip tool-call-only turns). This is
+    what the frontend reads aloud via /api/tts, so it must be the spoken text."""
     for m in reversed(messages or []):
-        if getattr(m, "type", None) == "ai" and isinstance(getattr(m, "content", None), str) \
-                and m.content.strip():
-            return m.content
+        if getattr(m, "type", None) == "ai":
+            txt = _text_of(getattr(m, "content", None))
+            if txt.strip():
+                return txt
     return ""
 
 
@@ -175,6 +200,25 @@ async def transcribe(audio: UploadFile = File(...)):
     data = await audio.read()
     text = transcribe_audio(data, audio.content_type or "audio/mpeg")
     return {"text": text}
+
+
+@app.post("/api/tts")
+async def tts(req: TTSReq):
+    """Generate TTS audio from the agent's reply text using Gemini 3.1 Flash TTS.
+    Returns a WAV file that the browser can play directly.
+    """
+    if not req.text.strip():
+        raise HTTPException(status_code=422, detail="text is required")
+    from app.tts import generate_tts
+    try:
+        wav_bytes = generate_tts(req.text, voice=req.voice)
+        return StreamingResponse(
+            io.BytesIO(wav_bytes),
+            media_type="audio/wav",
+            headers={"Content-Disposition": "inline; filename=reply.wav"},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")
 
 
 # ── CopilotKit / AG-UI agent endpoint (for useAgent) ────────────
