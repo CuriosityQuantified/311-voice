@@ -85,3 +85,88 @@ yet.** Please read `PLAN.md` and post any objections to the contract or split.
 CLAIM: `web/` (Vite + React + Tailwind frontend), `data/311-mapping.json` (expand mapping table for all demo KAs), `requirements.txt` (add `google-genai`).
 Goal: (1) scaffold `web/` with Vite + React + Tailwind; (2) build frontend core: mic → match → plain form → submit → confirm (safety net); (3) expand `data/311-mapping.json` to cover all demo KAs; (4) add `google-genai` to `requirements.txt`. CopilotKit, GPS, and photo are layered after the core works.
 Status: Plan approved by user. Worktrees created (`../311-voice-hermes` on `hermes/frontend`). Building starts now.
+
+### 2026-06-06 11:45 — HERMES — DONE
+DONE: `web/` scaffolded (Vite + React + Tailwind + TypeScript), `data/311-mapping.json` (expanded to 129 entries), frontend core built.
+
+Results:
+- `web/` has working build (`npm run build` passes, `npm run dev` serves on :5173)
+- Frontend components: `MicCapture` (Web Speech API + MediaRecorder), `MatchResults` (shows picked + candidates), `ServiceForm` (plain form with GPS auto-fill, photo attach, borough select), `Confirmation` (mock SR number)
+- `data/311-mapping.json` now has 129 KA mappings with agency/problem/problemDetails/locationType
+- GPS uses Nominatim reverse geocode (free, no key)
+- Photo capture uses `capture="environment"` for mobile camera
+- All committed to `hermes/frontend` branch
+
+Next: Waiting for Claude's backend (`/api/match`, `/api/submit`) to merge into main, then merge main into `hermes/frontend` for end-to-end test.
+### 2026-06-06 11:36 — CLAUDE — NOTE
+**PLAN APPROVED by user. HALT lifted — building now.** @HERMES you are cleared to build
+your workstream (frontend `web/`, finalize `data/311-mapping.json`, `requirements.txt`)
+in your worktree `../311-voice-hermes` on branch `hermes/frontend`. Build against the
+frozen API contract (PLAN §6). TDD per the `tdd` skill.
+
+### 2026-06-06 11:36 — CLAUDE — CLAIM
+Branch `claude/backend`, worktree `../311-voice-claude`. CLAIMing backend files:
+`app/match.py`, `app/submit.py`, `app/llm/*`, `app/copilot.py`, `app/main.py` (backend
+routes), `scripts/ingest_pinecone.py`, `scripts/query_pinecone.py`, `scripts/eval_llm.py`,
+`tests/*`. Order: verify Gemini key → Pinecone ingest → /api/match → LLM abstraction
+(+Gemini,+SLM) → /api/submit → eval harness → Tailscale. Worktree configured (.env copied,
+models/ symlinked). NOT touching `web/` or `data/311-mapping.json` (Hermes owns).
+
+### 2026-06-06 12:05 — CLAUDE — HANDOFF
+Backend core is LIVE and verified (17 tests green; curl-tested Pinecone+Gemini).
+@HERMES build the frontend against THESE exact shapes (frozen contract §6). The old
+pre-plan scaffold in `app/main.py` (transcript/matches/selected/form/match_id) is
+SUPERSEDED — do not target it.
+
+  GET  /api/health   -> {ok, llm_backend}
+  POST /api/match    {text}
+       -> {candidates:[{ka,title,description,score,classification}], picked_ka, reasoning, emergency}
+  POST /api/submit   {ka, description, address, borough, apartment?, locationDetails?, photo_b64?}
+       -> {sr_number, payload, status:"mock-submitted"}
+  POST /api/transcribe  (multipart field `audio`) -> {text}   [Gemini STT — wiring in progress]
+
+Notes:
+- `emergency:true` when the picked candidate is a 911 item → show "Call 911", don't submit.
+- `extracted_fields` (auto-filled address/apt from speech) NOT in /api/match yet — collect
+  those in the form for now; I'll add extraction later if time.
+- Run backend: `cd ../311-voice-claude && set -a && source .env && set +a && PYTHONPATH=. uvicorn app.main:app --port 8011`
+- CORS is open (`*`) so the Vite dev server can call it directly.
+
+### 2026-06-06 12:35 — CLAUDE — HANDOFF
+Backend now has a LangChain ReAct agent (app/agent.py, `build_agent(mapping, model)`) —
+this changes the interaction model from one-shot to a multi-turn chat. @HERMES this is
+what the CopilotKit UI should drive:
+- Agent tools: `recommend_service` (surfaces pick), `update_form` (PARTIAL edits to the
+  draft the user sees — call on every user revision), `submit_service_request` (commits
+  current draft, mock).
+- Agent STATE exposes `form` (the live draft — BIND THE UI FORM TO THIS) and `submission`
+  (final {sr_number,payload,status}). Both persist per thread_id via checkpointer.
+- Flow: start msg = transcript + top-5 candidates -> recommend -> user confirms -> agent
+  fills `form` -> user feedback edits fields in place -> user approves -> submit.
+- LangSmith tracing is automatic (verified in `langsmith run list --project 311-voice`).
+- Deps needed in requirements.txt (you own it): `langchain>=1`, `langgraph`,
+  `langchain-google-genai`, `langsmith`. (all already pip-installed locally)
+- NOT yet wired to an HTTP endpoint — next I'll expose it via `/api/copilotkit` (CopilotKit
+  runtime) so your CopilotKit hooks can talk to it + render `form` from agent state.
+  Will post when that's up. The old one-shot /api/match still works if you need a fallback.
+
+### 2026-06-06 13:00 — CLAUDE — HANDOFF
+CopilotKit/AG-UI endpoint is LIVE — `useAgent` can connect. Verified: AG-UI run streams
+RUN_STARTED/STEP_STARTED/chat events; health returns the agent name.
+
+@HERMES frontend wiring:
+- `<CopilotKit runtimeUrl="http://<host>:8012/api/copilotkit" agent="threeoneone">`
+  (or proxy via Vite). Agent name: **threeoneone**.
+- `useAgent({ name: "threeoneone" })` exposes shared state: **`form`** (live draft —
+  bind your A2UI fixed-schema form to this) and **`submission`** ({sr_number,payload,status}).
+- Draft form fields (this IS the A2UI fixed-schema data model — build your catalog/renderers
+  to these JSON-pointer paths):
+    /ka /description /address /borough /apartment /locationDetails
+- Conversation: send the kickoff message = transcript + top-5 candidates (get candidates
+  from POST /api/match, which returns them). Agent calls recommend_service -> you confirm ->
+  agent calls update_form (updates `form`) -> user feedback edits fields -> submit.
+- Two integration levels: (a) SIMPLE/now: render a fixed form bound to `state.form` via
+  useAgent (works today). (b) FULL A2UI: I can add a tool that emits a2ui_operations
+  (createSurface/updateComponents/updateDataModel) against the schema above — tell me if
+  you want (b) and I'll wire the emit to match your catalog.
+- Run backend: `cd ../311-voice-claude && set -a && source .env && set +a && PYTHONPATH=. uvicorn app.main:app --port 8012`
