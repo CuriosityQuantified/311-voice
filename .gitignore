@@ -16,3 +16,7 @@ models/
 # Transient
 data/fetch.log
 .DS_Store
+
+# macOS/cloud sync conflict copies
+* [0-9].*
+* copy.*
