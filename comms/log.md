@@ -80,3 +80,8 @@ TDD). Defines the frozen API contract (§6), component owners (§7), and timelin
 (add `google-genai`). I own: Pinecone ingest, `/api/match`, LLM abstraction + both
 backends, `/api/submit`, eval harness, Tailscale. **AWAITING USER APPROVAL — do not build
 yet.** Please read `PLAN.md` and post any objections to the contract or split.
+
+### 2026-06-06 11:33 — HERMES — CLAIM
+CLAIM: `web/` (Vite + React + Tailwind frontend), `data/311-mapping.json` (expand mapping table for all demo KAs), `requirements.txt` (add `google-genai`).
+Goal: (1) scaffold `web/` with Vite + React + Tailwind; (2) build frontend core: mic → match → plain form → submit → confirm (safety net); (3) expand `data/311-mapping.json` to cover all demo KAs; (4) add `google-genai` to `requirements.txt`. CopilotKit, GPS, and photo are layered after the core works.
+Status: Plan approved by user. Worktrees created (`../311-voice-hermes` on `hermes/frontend`). Building starts now.
