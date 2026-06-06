@@ -162,6 +162,31 @@ export default function ServiceForm({
         <p className="text-nyc-blue font-medium">{kaTitle}</p>
       </div>
 
+      {/* General mic at top */}
+      <div className="flex flex-col items-center gap-2 mb-4">
+        <button
+          type="button"
+          onClick={handleGeneralMic}
+          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+            generalMicRecording
+              ? 'bg-red-500 text-white animate-pulse'
+              : 'bg-nyc-orange text-white hover:bg-orange-600'
+          }`}
+          title={generalMicRecording ? 'Tap to stop recording' : 'Tap to describe changes'}
+        >
+          {generalMicRecording ? (
+            <Square className="w-6 h-6" />
+          ) : (
+            <Mic className="w-6 h-6" />
+          )}
+        </button>
+        <p className="text-xs text-gray-500">
+          {generalMicRecording
+            ? 'Recording... describe any changes needed'
+            : 'Tap to describe changes'}
+        </p>
+      </div>
+
       {/* Description */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -319,31 +344,6 @@ export default function ServiceForm({
         )}
       </div>
 
-      {/* General mic at bottom */}
-      <div className="flex flex-col items-center gap-2 mt-2">
-        <button
-          type="button"
-          onClick={handleGeneralMic}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
-            generalMicRecording
-              ? 'bg-red-500 text-white animate-pulse'
-              : 'bg-nyc-orange text-white hover:bg-orange-600'
-          }`}
-          title={generalMicRecording ? 'Tap to stop recording' : 'Tap to describe changes'}
-        >
-          {generalMicRecording ? (
-            <Square className="w-6 h-6" />
-          ) : (
-            <Mic className="w-6 h-6" />
-          )}
-        </button>
-        <p className="text-xs text-gray-500">
-          {generalMicRecording
-            ? 'Recording... describe any changes needed'
-            : 'Tap to describe changes'}
-        </p>
-      </div>
-
       {/* Actions */}
       <div className="flex gap-3 justify-center mt-4">
         <button type="button" onClick={onBack} className="btn-secondary">
@@ -372,12 +372,43 @@ export default function ServiceForm({
 }
 
 // TypeScript declarations for Web Speech API
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  [index: number]: {
+    transcript: string;
+    confidence: number;
+  };
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognition extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: any) => void;
+  onend: () => void;
+  start(): void;
+  stop(): void;
+}
+
+declare const SpeechRecognition: {
+  new (): SpeechRecognition;
+};
+
 declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
-  }
-  interface SpeechRecognitionEvent extends Event {
-    results: SpeechRecognitionResultList;
-  }
+  var SpeechRecognition: {
+    new (): SpeechRecognition;
+  };
+  var webkitSpeechRecognition: {
+    new (): SpeechRecognition;
+  };
 }
