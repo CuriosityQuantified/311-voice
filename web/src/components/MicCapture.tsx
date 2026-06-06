@@ -19,7 +19,9 @@ export default function MicCapture({ onTranscript, onAudioBlob, isProcessing }: 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      // No forced mimeType: let the browser pick its native format (Chrome=webm,
+      // Safari/iOS=mp4). The backend transcodes whatever it receives to WAV for Gemini.
+      const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
@@ -30,28 +32,13 @@ export default function MicCapture({ onTranscript, onAudioBlob, isProcessing }: 
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        // Single reliable path: hand the recorded blob to the parent, which POSTs it to
+        // /api/transcribe (Gemini STT; backend transcodes to WAV). No Web Speech API — it
+        // can't transcribe a recorded blob and was racing/duplicating the agent call.
+        const blob = new Blob(chunksRef.current, {
+          type: mediaRecorder.mimeType || 'audio/webm',
+        });
         onAudioBlob(blob);
-        // Also try Web Speech API for immediate transcript
-        // (backend will do Gemini STT for accuracy)
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-          const recognition = new SpeechRecognition();
-          recognition.continuous = false;
-          recognition.interimResults = false;
-          recognition.lang = 'en-US';
-          recognition.onresult = (event: SpeechRecognitionEvent) => {
-            const text = event.results[0][0].transcript;
-            onTranscript(text);
-          };
-          recognition.onerror = () => {
-            // Fallback: just send empty transcript, backend will transcribe
-            onTranscript('');
-          };
-          recognition.start();
-        } else {
-          onTranscript('');
-        }
       };
 
       mediaRecorder.start();
