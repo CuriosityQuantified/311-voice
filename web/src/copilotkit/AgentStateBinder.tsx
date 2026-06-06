@@ -6,6 +6,8 @@ import ServiceForm from "../components/ServiceForm";
 import Confirmation from "../components/Confirmation";
 import MicCapture from "../components/MicCapture";
 import TTSPlayer from "../components/TTSPlayer";
+import { submitRequest } from "../api";
+import type { SubmitPayload } from "../types";
 
 const API_URL = "http://localhost:8000/api/agent";
 const TRANSCRIBE_URL = "http://localhost:8000/api/transcribe";
@@ -77,6 +79,26 @@ export default function AgentStateBinder({ mockState }: AgentStateBinderProps) {
     }
   }, [sendToAgent]);
 
+  // Submission is PROGRAMMATIC: POST the form straight to /api/submit (deterministic mock).
+  // The agent is NOT invoked here — filing is a plain API call, not an LLM decision.
+  const submitForm = useCallback(async (payload: SubmitPayload) => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const submission = await submitRequest(payload);
+      setState((prev) => ({
+        ...prev,
+        submission: submission as unknown as AgentState["submission"],
+        screen: "confirm",
+      }));
+    } catch (err) {
+      console.error("Submit failed:", err);
+      setError(err instanceof Error ? err.message : "Failed to submit the request");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const screen = state.screen || "mic";
 
   return (
@@ -126,7 +148,7 @@ export default function AgentStateBinder({ mockState }: AgentStateBinderProps) {
           pickedKa={state.form?.ka || state.picked_ka || ""}
           kaTitle={state.candidates?.find(c => c.ka === (state.form?.ka || state.picked_ka))?.title || ""}
           formData={state.form || DEFAULT_AGENT_STATE.form}
-          onSubmit={() => sendToAgent("Submit the form")}
+          onSubmit={submitForm}
           onBack={() => sendToAgent("Go back to results")}
           isSubmitting={isLoading}
           onFieldTranscript={(field, transcript) => {
