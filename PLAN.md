@@ -86,6 +86,16 @@ def select_service(complaint: str, candidates: list[Candidate]) -> Selection
   compare picked_ka's category to `expected_category`.
 - `scripts/eval_llm.py` reports, per backend, **top-1 accuracy + avg latency** + per-item
   table. STT accuracy reported once (single STT model).
+
+**Tooling = LangSmith CLI** (`langsmith`, v0.2.34, at `~/.local/bin/langsmith`; reads
+`.env` creds; project `311-voice` already exists). Use it to:
+- Trace every match/STT/LLM call (`LANGSMITH_TRACING=true` already set) for debugging:
+  `langsmith trace list --project 311-voice`, `langsmith run list --run-type llm`.
+- Hold the eval set as a dataset and compare backends as experiments:
+  `langsmith dataset ...`, `langsmith experiment list --dataset 311-voice-eval`.
+- Debug failures by filtering traces (errors/latency) instead of print-debugging.
+⚠️ Name collision: `/opt/homebrew/bin/langsmith` is the unrelated self-hosted-server
+manager; the eval CLI must win PATH (it does — `~/.local/bin` is first).
 - **Decision rule (default, override anytime):** use **SLM** for the demo if it scores
   **≥80% absolute AND within 10 points of Gemini**; otherwise **Gemini**.
 
@@ -137,6 +147,9 @@ interfaces only, LLM tests use FakeBackend (no network). Frontend = pragmatic + 
   OR rely on backend fallback. ⚠️ `GOOGLE_API_KEY` value format (`AQ.Ab8...`) is unusual —
   **verify it authenticates with a 5-sec test call before building the Gemini backend.**
 - llama.cpp installed (`llama-server`); model in `models/` (gitignored).
+- LangSmith CLI installed (`~/.local/bin/langsmith` v0.2.34). `.env` has `LANGSMITH_TRACING`,
+  `LANGSMITH_ENDPOINT`, `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT="311-voice"`. SDK `langsmith`
+  0.6.6 present. Backends should emit traces to project `311-voice`.
 
 ## 9. Timeline (~240 min, 2 agents parallel)
 
