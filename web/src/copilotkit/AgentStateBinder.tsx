@@ -109,8 +109,8 @@ export default function AgentStateBinder({ mockState }: AgentStateBinderProps) {
         </div>
       )}
 
-      {/* Agent reply text + TTS audio */}
-      {state.reply && screen !== "mic" && (
+      {/* Agent reply text + TTS audio (not on mic or confirm screens) */}
+      {state.reply && screen !== "mic" && screen !== "confirm" && (
         <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg max-w-sm w-full">
           <p className="text-blue-800 text-sm font-medium mb-2">{state.reply}</p>
           <TTSPlayer text={state.reply} autoPlay={true} />
