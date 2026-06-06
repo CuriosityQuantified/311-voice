@@ -1,0 +1,14 @@
+# Secrets — NEVER commit
+API.md
+.env
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Transient
+data/fetch.log
+.DS_Store
