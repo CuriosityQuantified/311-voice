@@ -1,0 +1,7 @@
+pinecone>=5
+fastapi
+uvicorn[standard]
+langchain
+langchain-community
+python-multipart
+pydantic

@@ -9,6 +9,10 @@ __pycache__/
 .venv/
 venv/
 
+# Models (large binaries — never commit)
+models/
+*.gguf
+
 # Transient
 data/fetch.log
 .DS_Store
