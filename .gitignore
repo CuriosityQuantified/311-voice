@@ -1,23 +1,102 @@
-# Secrets — NEVER commit
-API.md
+# =============================================================================
+# SECRETS — NEVER commit
+# =============================================================================
 .env
+.env.local
+.env.*
+API.md
 *.key
+*.pem
+*.p12
+*.pfx
 
-# Python
-__pycache__/
-*.pyc
-.venv/
-venv/
-
-# Models (large binaries — never commit)
+# =============================================================================
+# MODELS — Large binaries (regenerable / downloadable)
+# =============================================================================
 models/
 *.gguf
+*.ggml
+*.safetensors
+*.bin
+*.onnx
 
-# Transient
+# =============================================================================
+# DATA — Generated / transient / large files
+# =============================================================================
+# Synthetic voice test corpus (200 MP3s + TXTs + transcripts.json ~5.9 MB)
+# Regenerable via scripts/generate_audio.py + generate_transcripts.py
+data/voice-files/*.mp3
+data/voice-files/*.txt
+data/voice-files/*.json
+
+# Transient logs
+*.log
 data/fetch.log
-.DS_Store
-models
+data/fetch.log.*
 
-# macOS/cloud sync conflict copies
+# Pinecone dumps (regenerable)
+data/pinecone-records.csv
+data/pinecone-records.json
+
+# =============================================================================
+# PYTHON — Cache, virtual envs
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+
+# =============================================================================
+# TEST — Cache files
+# =============================================================================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =============================================================================
+# FRONTEND — Build artifacts, node_modules
+# =============================================================================
+node_modules/
+web/node_modules/
+web/dist/
+*.lock
+
+# =============================================================================
+# COORDINATION — Personal tracking files (not project source)
+# =============================================================================
+.claude-progress.md
+*.progress.md
+
+# =============================================================================
+# macOS — System files
+# =============================================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# =============================================================================
+# IDE — Editor files
+# =============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# =============================================================================
+# Temporary / backup files
+# =============================================================================
 * [0-9].*
 * copy.*
+*.bak
+*.tmp
+*.temp

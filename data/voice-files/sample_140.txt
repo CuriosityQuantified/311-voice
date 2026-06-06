@@ -1,1 +1,0 @@
-The inspector gave me a violation for something that was already fixed.
