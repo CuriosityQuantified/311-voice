@@ -85,8 +85,11 @@ emergency:  bool                                 // picked is a 911 item -> show
 form:       { ka, description, address, borough, apartment, locationDetails }   // LIVE DRAFT
 submission: { sr_number, payload, status }       // after submit
 screen:     "mic" | "results" | "form" | "confirm"   // <- render this screen (Option A)
+todos:      [ {content, status}, ... ]           // ADDITIVE (TodoListMiddleware) — frontend may ignore
 ```
-The frontend renders the screen named by `screen`. Initialize a run with
+The frontend renders the screen named by `screen`. **`todos` is new and additive** — added by
+the agent's TodoListMiddleware harness; the `useAgent` binder can safely ignore it (no UI
+change required). Nothing else in the state shape changed. Initialize a run with
 `{ messages:[{role:"user", content: makeStartMessage(transcript)}], screen:"mic", form:{} }`.
 
 ### Agent tools (backend-defined, in app/agent.py) — each updates state
@@ -94,6 +97,13 @@ The frontend renders the screen named by `screen`. Initialize a run with
 - `recommend_service(picked_ka, reasoning)` — sets `picked_ka`, `reasoning`, `emergency`, `form.ka`.
 - `update_form(ka?, description?, address?, borough?, apartment?, locationDetails?)` — PARTIAL update to `form`; sets `screen="form"`. Call on every user revision.
 - `submit_service_request()` — commits current `form` (mock); sets `submission`, `screen="confirm"`.
+- `load_skill(skill_name)` — internal: loads on-demand domain notes (no state change, no UI impact).
+- `write_todos(...)` — internal (TodoListMiddleware); writes `todos` state. UI may ignore.
+
+> HARNESS (2026-06-06): the agent now runs LangChain built-in middleware — PII redaction
+> (input), summarization, context-editing, model/tool call limits, and model/tool retries —
+> plus a `load_skill` progressive-disclosure tool. All additive: the only new state field is
+> `todos`; the 4 UI-facing tools and the `form`/`submission`/`screen` shapes are unchanged.
 
 > DECISION (2026-06-06): we use the **shared-state pattern** (useAgent), NOT the
 > action-driven (`show_match_results`/`show_service_form`) pattern. Frontend replaces the

@@ -80,3 +80,21 @@ TDD). Defines the frozen API contract (§6), component owners (§7), and timelin
 (add `google-genai`). I own: Pinecone ingest, `/api/match`, LLM abstraction + both
 backends, `/api/submit`, eval harness, Tailscale. **AWAITING USER APPROVAL — do not build
 yet.** Please read `PLAN.md` and post any objections to the contract or split.
+
+### 2026-06-06 12:55 — CLAUDE — NOTE (backend up + agent harness)
+Backend is RUNNING on `:8000` (`/api/health` 200, `/api/copilotkit` mounted/alive) — the
+"Failed to fetch" banner should clear once `useAgent` connects. It's restarted on the new
+agent-harness build.
+
+Added the agent harness (additive, no breaking changes):
+- LangChain built-in **middleware**: PII redaction (email/credit_card/ip, input-only),
+  Summarization, ContextEditing, Model/Tool **call limits**, Model/Tool **retries**.
+- **Skills** (progressive disclosure): new `load_skill` tool + `app/skills/*.md`. The agent
+  pulls domain notes on demand; no UI/state impact.
+- TodoListMiddleware adds ONE new state field: **`todos`** (array). Your `useAgent` binder
+  can ignore it. The `form`/`submission`/`screen` shapes and the 4 UI-facing tools are
+  UNCHANGED. See SCHEMA.md "HARNESS (2026-06-06)".
+
+Nothing for you to change. Verified live: full search→recommend→update_form→edit→submit flow
+reaches `screen="confirm"` with the middleware stack active; `load_skill` fires on vague
+complaints. @HERMES ping me if the agent stream shows anything unexpected.

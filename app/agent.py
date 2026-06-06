@@ -22,6 +22,17 @@ import json
 from typing import Annotated, Optional
 
 from langchain.agents import AgentState, create_agent
+from langchain.agents.middleware import (
+    ClearToolUsesEdit,
+    ContextEditingMiddleware,
+    ModelCallLimitMiddleware,
+    ModelRetryMiddleware,
+    PIIMiddleware,
+    SummarizationMiddleware,
+    TodoListMiddleware,
+    ToolCallLimitMiddleware,
+    ToolRetryMiddleware,
+)
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import InjectedToolCallId, tool
 from langgraph.prebuilt import InjectedState
@@ -29,6 +40,7 @@ from langgraph.types import Command
 
 from app.llm.base import Candidate
 from app.match import parse_hits
+from app.skills import list_skills, load_skill_content
 from app.submit import mock_submit
 
 FORM_FIELDS = ("ka", "description", "address", "borough", "apartment", "locationDetails")
@@ -48,8 +60,22 @@ SYSTEM = (
     "it (commits the current draft). Required: ka, address, borough. "
     "Boroughs: MANHATTAN, BROOKLYN, QUEENS, BRONX, STATEN ISLAND.\n"
     "If the recommended service is an emergency (911) item, tell the user to call 911 and do "
-    "NOT submit."
+    "NOT submit.\n\n"
+    "You also have SKILLS — on-demand notes (examples, gotchas, troubleshooting) for tricky "
+    "situations. Call load_skill(skill_name) to read one BEFORE acting when you hit it:\n"
+    f"{list_skills()}\n"
+    "Use them e.g. when picking among close candidates (service_selection), parsing an "
+    "address (address_and_borough), a complaint sounds dangerous (emergency), a submit fails "
+    "(submission_troubleshooting), or the complaint is vague/multi-issue (ambiguous_or_multiple)."
 )
+
+
+@tool
+def load_skill(skill_name: str) -> str:
+    """Load an on-demand skill note (examples, gotchas, troubleshooting) for a situation.
+    Available skills: service_selection, address_and_borough, emergency, form_fields,
+    submission_troubleshooting, ambiguous_or_multiple. Returns the note's text."""
+    return load_skill_content(skill_name)
 
 
 class FormState(AgentState):
@@ -96,6 +122,34 @@ def is_emergency(candidates: list[Candidate], picked_ka: str) -> bool:
 
 def _candidate_dicts(candidates: list[Candidate]) -> list[dict]:
     return [c.__dict__ for c in candidates]
+
+
+def build_middleware(summary_model="google_genai:gemini-3.1-flash-lite") -> list:
+    """The agent's built-in middleware harness (LangChain v1). Order matters: PII guards
+    input first; summarization/context-editing keep the window small; the limits and retries
+    wrap the model/tool calls for a resilient single-shot demo.
+
+    Notes for langchain==1.2.7:
+      * PII built-in detectors (email/credit_card/ip) never match street addresses, so the
+        form's address data is preserved; apply_to_output needs >=1.3.2, so input-only.
+      * Summarization uses tokens/messages triggers (Gemini lacks a token profile here, so
+        a `fraction` trigger would not resolve).
+    """
+    return [
+        PIIMiddleware("email", strategy="redact", apply_to_input=True),
+        PIIMiddleware("credit_card", strategy="mask", apply_to_input=True),
+        PIIMiddleware("ip", strategy="redact", apply_to_input=True),
+        TodoListMiddleware(),
+        SummarizationMiddleware(model=summary_model, trigger=("tokens", 3000),
+                                keep=("messages", 12)),
+        ContextEditingMiddleware(
+            edits=[ClearToolUsesEdit(trigger=20000, keep=3, clear_tool_inputs=False)]),
+        ModelCallLimitMiddleware(thread_limit=25, run_limit=12, exit_behavior="end"),
+        ToolCallLimitMiddleware(thread_limit=30, run_limit=15),
+        ToolCallLimitMiddleware(tool_name="search_services", run_limit=3),
+        ModelRetryMiddleware(max_retries=2, retry_on=(Exception,)),
+        ToolRetryMiddleware(max_retries=2, tools=["search_services"], retry_on=(Exception,)),
+    ]
 
 
 def build_agent(mapping: dict,
@@ -198,10 +252,13 @@ def build_agent(mapping: dict,
         from langgraph.checkpoint.memory import InMemorySaver
         checkpointer = InMemorySaver()
 
+    summary_model = model if isinstance(model, str) else "google_genai:gemini-3.1-flash-lite"
     return create_agent(
         model,
-        tools=[search_services, recommend_service, update_form, submit_service_request],
+        tools=[search_services, recommend_service, update_form, submit_service_request,
+               load_skill],
         system_prompt=SYSTEM,
         state_schema=FormState,
+        middleware=build_middleware(summary_model=summary_model),
         checkpointer=checkpointer,
     )
