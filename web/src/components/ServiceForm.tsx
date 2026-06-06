@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Camera, Loader2, Send } from 'lucide-react';
-import type { SubmitPayload, ExtractedFields, Borough } from '../types';
+import type { SubmitPayload } from '../types';
 import { BOROUGHS } from '../types';
 
 interface ServiceFormProps {
   pickedKa: string;
   kaTitle: string;
-  extractedFields: ExtractedFields;
+  formData: {
+    description: string;
+    address: string;
+    borough: string;
+    apartment: string;
+    locationDetails: string;
+  };
   onSubmit: (payload: SubmitPayload) => void;
   onBack: () => void;
   isSubmitting: boolean;
@@ -15,19 +21,28 @@ interface ServiceFormProps {
 export default function ServiceForm({
   pickedKa,
   kaTitle,
-  extractedFields,
+  formData,
   onSubmit,
   onBack,
   isSubmitting,
 }: ServiceFormProps) {
-  const [description, setDescription] = useState(extractedFields.description || '');
-  const [address, setAddress] = useState(extractedFields.address || '');
-  const [borough, setBorough] = useState('');
-  const [apartment, setApartment] = useState(extractedFields.apartment || '');
-  const [locationDetails, setLocationDetails] = useState(extractedFields.locationDetails || '');
+  const [description, setDescription] = useState(formData.description || '');
+  const [address, setAddress] = useState(formData.address || '');
+  const [borough, setBorough] = useState(formData.borough || '');
+  const [apartment, setApartment] = useState(formData.apartment || '');
+  const [locationDetails, setLocationDetails] = useState(formData.locationDetails || '');
   const [photo, setPhoto] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState('');
+
+  // Sync with external formData changes (e.g., from agent updates)
+  useEffect(() => {
+    setDescription(formData.description || '');
+    setAddress(formData.address || '');
+    setBorough(formData.borough || '');
+    setApartment(formData.apartment || '');
+    setLocationDetails(formData.locationDetails || '');
+  }, [formData]);
 
   // Auto-fill from GPS
   const fillFromGPS = () => {
@@ -37,7 +52,6 @@ export default function ServiceForm({
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         try {
-          // Reverse geocode using Nominatim (free, no key)
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
             { headers: { 'User-Agent': '311-voice/0.1' } }
@@ -48,9 +62,7 @@ export default function ServiceForm({
             ? `${addr.house_number} ${addr.road || ''}`
             : addr.road || '';
           setAddress(street);
-          // Map borough
-          const boroName =
-            addr.borough || addr.city || addr.county || '';
+          const boroName = addr.borough || addr.city || addr.county || '';
           const matched = BOROUGHS.find(
             (b) =>
               boroName.toLowerCase().includes(b.name.toLowerCase()) ||

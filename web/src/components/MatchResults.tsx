@@ -1,14 +1,16 @@
-import type { MatchResponse } from '../types';
+import type { MatchCandidate } from '../types';
 import { CheckCircle, ArrowRight, Building2 } from 'lucide-react';
 
 interface MatchResultsProps {
-  result: MatchResponse;
+  candidates: MatchCandidate[];
+  pickedKa: string;
+  reasoning?: string;
   onContinue: () => void;
   onBack: () => void;
 }
 
-export default function MatchResults({ result, onContinue, onBack }: MatchResultsProps) {
-  const picked = result.candidates.find((c) => c.ka === result.picked_ka);
+export default function MatchResults({ candidates, pickedKa, onContinue, onBack }: MatchResultsProps) {
+  const picked = candidates.find((c) => c.ka === pickedKa);
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-2xl">
@@ -34,8 +36,8 @@ export default function MatchResults({ result, onContinue, onBack }: MatchResult
       <div className="card">
         <h3 className="font-semibold text-gray-700 mb-3">Other matches</h3>
         <div className="flex flex-col gap-2">
-          {result.candidates
-            .filter((c) => c.ka !== result.picked_ka)
+          {candidates
+            .filter((c) => c.ka !== pickedKa)
             .map((c) => (
               <div
                 key={c.ka}

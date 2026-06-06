@@ -6,6 +6,7 @@ import MicCapture from './components/MicCapture';
 import MatchResults from './components/MatchResults';
 import ServiceForm from './components/ServiceForm';
 import Confirmation from './components/Confirmation';
+import AgentStateBinder from './copilotkit/AgentStateBinder';
 
 export default function App() {
   const [step, setStep] = useState<AppStep>('mic');
@@ -21,7 +22,6 @@ export default function App() {
       setIsProcessing(true);
       setError('');
       try {
-        // If Web Speech gave us text, use it; otherwise backend will transcribe from audio
         const result = await matchComplaint(text || 'audio_upload_placeholder');
         setMatchResult(result);
         setStep('results');
@@ -77,10 +77,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="phone-frame">
-        {/* iPhone notch */}
         <div className="phone-notch" />
-        
-        {/* Screen content */}
         <div className="phone-screen">
           <main className="flex-1 flex flex-col items-center justify-start p-4 overflow-y-auto">
             {error && (
@@ -100,7 +97,8 @@ export default function App() {
 
             {step === 'results' && matchResult && (
               <MatchResults
-                result={matchResult}
+                candidates={matchResult.candidates}
+                pickedKa={matchResult.picked_ka}
                 onContinue={handleContinue}
                 onBack={handleBack}
               />
@@ -113,7 +111,13 @@ export default function App() {
                   matchResult.candidates.find((c) => c.ka === matchResult.picked_ka)
                     ?.title || 'Unknown Service'
                 }
-                extractedFields={matchResult.extracted_fields}
+                formData={{
+                  description: matchResult.extracted_fields.description || '',
+                  address: matchResult.extracted_fields.address || '',
+                  borough: '',
+                  apartment: matchResult.extracted_fields.apartment || '',
+                  locationDetails: matchResult.extracted_fields.locationDetails || '',
+                }}
                 onSubmit={handleSubmit}
                 onBack={handleBack}
                 isSubmitting={isSubmitting}
@@ -125,15 +129,12 @@ export default function App() {
             )}
           </main>
 
-          {/* Footer */}
           <footer className="bg-gray-100 py-2 px-4 text-center flex-shrink-0">
             <p className="text-[10px] text-gray-500">
               Hackathon Demo · Mock Submission Only
             </p>
           </footer>
         </div>
-        
-        {/* Home indicator */}
         <div className="phone-home-indicator" />
       </div>
     </div>

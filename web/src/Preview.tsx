@@ -4,71 +4,15 @@ import MicCapture from './components/MicCapture';
 import MatchResults from './components/MatchResults';
 import ServiceForm from './components/ServiceForm';
 import Confirmation from './components/Confirmation';
-import MatchResultsAction from './copilotkit/MatchResultsAction';
-import ServiceFormAction from './copilotkit/ServiceFormAction';
-import type { MatchResponse, SubmitResponse } from './types';
+import type { MatchCandidate } from './copilotkit/schema';
 
-const mockMatchResult: MatchResponse = {
-  candidates: [
-    {
-      ka: 'KA-01036',
-      title: 'Heat or Hot Water Complaint in a Residential Building',
-      description: 'Report heat or hot water problems in a residential building.',
-      score: 0.95,
-      classification: 'submittable',
-    },
-    {
-      ka: 'KA-01017',
-      title: 'Noise from Neighbor',
-      description: 'Report noise from a neighbor.',
-      score: 0.72,
-      classification: 'submittable',
-    },
-    {
-      ka: 'KA-01093',
-      title: 'Pothole or Cave-In on Street',
-      description: 'Report a pothole or cave-in on a street.',
-      score: 0.68,
-      classification: 'submittable',
-    },
-    {
-      ka: 'KA-01107',
-      title: 'Rat or Mouse Complaint',
-      description: 'Report a rat or mouse sighting.',
-      score: 0.45,
-      classification: 'submittable',
-    },
-    {
-      ka: 'KA-01084',
-      title: 'Catch Basin Complaint',
-      description: 'Report a clogged or broken catch basin.',
-      score: 0.32,
-      classification: 'submittable',
-    },
-  ],
-  picked_ka: 'KA-01036',
-  reasoning: 'The complaint explicitly mentions "no heat in my apartment," which directly matches the Heat or Hot Water service.',
-  extracted_fields: {
-    description: 'No heat in my apartment for the last 3 days',
-    address: '123 Main St',
-    apartment: '4B',
-    locationDetails: '',
-  },
-};
-
-const mockSubmitResult: SubmitResponse = {
-  sr_number: 'SR-2026-0615-0042',
-  payload: {
-    ka: 'KA-01036',
-    description: 'No heat in my apartment for the last 3 days',
-    address: '123 Main St',
-    borough: 'MANHATTAN',
-    apartment: '4B',
-    locationDetails: '',
-    photo_b64: undefined,
-  },
-  status: 'mock-submitted',
-};
+const mockCandidates: MatchCandidate[] = [
+  { ka: 'KA-01036', title: 'Heat or Hot Water Complaint in a Residential Building', description: 'Report heat or hot water problems in a residential building.', score: 0.95, classification: 'submittable' },
+  { ka: 'KA-01017', title: 'Noise from Neighbor', description: 'Report noise from a neighbor.', score: 0.72, classification: 'submittable' },
+  { ka: 'KA-01093', title: 'Pothole or Cave-In on Street', description: 'Report a pothole or cave-in on a street.', score: 0.68, classification: 'submittable' },
+  { ka: 'KA-01107', title: 'Rat or Mouse Complaint', description: 'Report a rat or mouse sighting.', score: 0.45, classification: 'submittable' },
+  { ka: 'KA-01084', title: 'Catch Basin Complaint', description: 'Report a clogged or broken catch basin.', score: 0.32, classification: 'submittable' },
+];
 
 function PreviewWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -106,11 +50,9 @@ function MicPreview() {
 function ResultsPreview() {
   return (
     <PreviewWrapper>
-      {/* Mount CopilotKit action registration (no visual output) */}
-      <MatchResultsAction />
-      {/* Original visual UI */}
       <MatchResults
-        result={mockMatchResult}
+        candidates={mockCandidates}
+        pickedKa="KA-01036"
         onContinue={() => alert('Would go to form')}
         onBack={() => alert('Would go back to mic')}
       />
@@ -121,13 +63,16 @@ function ResultsPreview() {
 function FormPreview() {
   return (
     <PreviewWrapper>
-      {/* Mount CopilotKit action registration (no visual output) */}
-      <ServiceFormAction />
-      {/* Original visual UI */}
       <ServiceForm
         pickedKa="KA-01036"
         kaTitle="Heat or Hot Water Complaint in a Residential Building"
-        extractedFields={mockMatchResult.extracted_fields}
+        formData={{
+          description: 'No heat in my apartment for the last 3 days',
+          address: '123 Main St',
+          borough: 'MANHATTAN',
+          apartment: '4B',
+          locationDetails: '',
+        }}
         onSubmit={() => alert('Would submit')}
         onBack={() => alert('Would go back')}
         isSubmitting={false}
@@ -139,7 +84,21 @@ function FormPreview() {
 function ConfirmPreview() {
   return (
     <PreviewWrapper>
-      <Confirmation result={mockSubmitResult} onReset={() => alert('Would reset')} />
+      <Confirmation
+        result={{
+          sr_number: 'SR-2026-0615-0042',
+          payload: {
+            ka: 'KA-01036',
+            description: 'No heat in my apartment for the last 3 days',
+            address: '123 Main St',
+            borough: 'MANHATTAN',
+            apartment: '4B',
+            locationDetails: '',
+          },
+          status: 'mock-submitted',
+        }}
+        onReset={() => alert('Would reset')}
+      />
     </PreviewWrapper>
   );
 }
