@@ -66,9 +66,8 @@ export default function TTSPlayer({ text, autoPlay = true, voice = "Aoede" }: TT
   return (
     <audio
       ref={audioRef}
-      controls
-      className="w-full max-w-xs"
-      style={{ height: 32 }}
+      autoPlay
+      style={{ display: "none" }}
     />
   );
 }
