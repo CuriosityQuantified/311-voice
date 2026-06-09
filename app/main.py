@@ -21,6 +21,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from app import stt
 from app.match import run_match
 from app.submit import mock_submit
 
@@ -89,6 +90,7 @@ class MatchReq(BaseModel):
 class AgentReq(BaseModel):
     text: str
     thread_id: str
+    language: str = "en"  # ISO 639-1 of the resident's speech; drives outbound localization
 
 
 class SubmitReq(BaseModel):
@@ -99,6 +101,7 @@ class SubmitReq(BaseModel):
     apartment: str | None = None
     locationDetails: str | None = None
     photo_b64: str | None = None
+    language: str = "en"  # if non-English, description is translated to English for the NYC payload
 
 
 class TTSReq(BaseModel):
@@ -157,6 +160,45 @@ def _last_ai_text(messages) -> str:
     return ""
 
 
+def _localize_agent_out(out: dict, language: str) -> dict:
+    """Translate the user-facing strings of an agent-turn response INTO `language` for display,
+    in ONE batched Gemini call. Canonical/internal fields (picked_ka, candidate ka, form.ka and
+    the other form fields, emergency, screen) stay English so the match/submit pipeline is
+    unaffected. No-op for English. Mutates and returns `out`."""
+    if (language or "en").lower() == "en":
+        return out
+    items: dict[str, str] = {}
+    if out.get("reply"):
+        items["reply"] = out["reply"]
+    if out.get("reasoning"):
+        items["reasoning"] = out["reasoning"]
+    form = out.get("form") or {}
+    if form.get("description"):
+        items["form.description"] = form["description"]
+    candidates = out.get("candidates") or []
+    for i, c in enumerate(candidates):
+        if c.get("title"):
+            items[f"cand{i}.title"] = c["title"]
+        if c.get("description"):
+            items[f"cand{i}.description"] = c["description"]
+    if not items:
+        return out
+    tr = stt.translate_map(items, language)
+    if "reply" in tr:
+        out["reply"] = tr["reply"]
+    if "reasoning" in tr:
+        out["reasoning"] = tr["reasoning"]
+    if "form.description" in tr:
+        form["description"] = tr["form.description"]
+        out["form"] = form
+    for i, c in enumerate(candidates):
+        if f"cand{i}.title" in tr:
+            c["title"] = tr[f"cand{i}.title"]
+        if f"cand{i}.description" in tr:
+            c["description"] = tr[f"cand{i}.description"]
+    return out
+
+
 @app.post("/api/agent")
 def agent_turn(req: AgentReq):
     """Run ONE turn of the tool-calling agent and return its shared state. The agent's tool
@@ -172,7 +214,7 @@ def agent_turn(req: AgentReq):
     prior = agent.get_state(cfg).values  # {} on a brand-new thread
     content = req.text if prior.get("messages") else make_start_message(req.text)
     out = agent.invoke({"messages": [{"role": "user", "content": content}]}, cfg)
-    return {
+    resp = {
         "transcript": out.get("transcript", ""),
         "candidates": out.get("candidates", []),
         "picked_ka": out.get("picked_ka", ""),
@@ -182,24 +224,38 @@ def agent_turn(req: AgentReq):
         "submission": out.get("submission", {}),
         "screen": out.get("screen", "mic"),
         "reply": _last_ai_text(out.get("messages")),
+        "language": req.language,
     }
+    # Localize user-facing strings into the resident's language for display (no-op for English).
+    return _localize_agent_out(resp, req.language)
 
 
 @app.post("/api/submit")
 def submit(req: SubmitReq):
-    try:
-        return mock_submit(req.model_dump(), get_mapping())
-    except KeyError:
-        raise HTTPException(status_code=422,
-                            detail=f"No CreateServiceRequest mapping for KA '{req.ka}'")
+    payload = req.model_dump()
+    original_description = payload.get("description", "")
+    # NYC must receive English: translate the (possibly localized) description to English for the
+    # payload, then restore the original for display so the confirmation shows the user's language.
+    if (req.language or "en").lower() != "en" and original_description:
+        payload["description"] = stt.translate_to_english(original_description, req.language)
+    result = mock_submit(payload, get_mapping())  # any KA files (mock); never raises now
+    if (req.language or "en").lower() != "en" and original_description:
+        result["payload"]["description"] = original_description
+    return result
 
 
 @app.post("/api/transcribe")
 async def transcribe(audio: UploadFile = File(...)):
-    from app.stt import transcribe_audio
+    from app.stt import transcribe_audio, detect_language, translate_to_english
     data = await audio.read()
     text = transcribe_audio(data, audio.content_type or "audio/mpeg")
-    return {"text": text}
+    lang = detect_language(text)
+    text_en = translate_to_english(text, lang) if lang != "en" else text
+    return {
+        "text": text_en,  # English version for agent processing
+        "original_text": text,  # Original language for display
+        "language": lang,  # ISO 639-1 code
+    }
 
 
 @app.post("/api/tts")

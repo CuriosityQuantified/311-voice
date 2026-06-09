@@ -43,4 +43,7 @@ def test_mock_submit_returns_sr_number_and_payload():
     res = mock_submit(sub, MAPPING, sr_number="311-MOCK-00000001")
     assert res["sr_number"] == "311-MOCK-00000001"
     assert res["status"] == "mock-submitted"
-    assert res["payload"]["agency"] == "HPD"
+    # mock_submit returns the RAW submission as the payload (what the frontend Confirmation
+    # screen renders: ka/description/address/borough), NOT the NYC categorical payload.
+    assert res["payload"]["ka"] == "KA-01036"
+    assert res["payload"]["description"] == "no heat"

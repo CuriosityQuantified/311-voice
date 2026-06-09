@@ -55,9 +55,16 @@ def test_submit_returns_sr_number_for_mapped_ka():
     body = r.json()
     assert body["status"] == "mock-submitted"
     assert body["sr_number"].startswith("311-MOCK-")
-    assert body["payload"]["agency"]
+    # payload is the raw submission the frontend renders (ka/description/address/borough)
+    assert body["payload"]["ka"] == "KA-01036"
 
 
-def test_submit_rejects_unmapped_ka():
-    r = client.post("/api/submit", json={"ka": "KA-00000", "description": "x"})
-    assert r.status_code == 422
+def test_submit_accepts_unmapped_ka():
+    # Universal submission: any of the 2,084 corpus KAs files as a mock, not just the 54 mapped.
+    r = client.post("/api/submit", json={
+        "ka": "KA-00000", "description": "x", "address": "1 Main St", "borough": "QUEENS",
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "mock-submitted"
+    assert body["payload"]["ka"] == "KA-00000"

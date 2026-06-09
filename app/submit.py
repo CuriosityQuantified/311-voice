@@ -40,8 +40,9 @@ def _new_sr_number() -> str:
 
 
 def mock_submit(submission: dict, mapping: dict, sr_number: str | None = None) -> dict:
-    # Validate the KA exists in the mapping (KeyError on unmapped -> caller surfaces 4xx)
-    _ = mapping[submission["ka"]]
+    # Universal submission: ANY of the 2,084 corpus KAs files as a mock, not just the 54 with a
+    # hand-curated categorical mapping. Mock-only (never POSTed to NYC), so an unmapped KA needs
+    # no categorical lookup — we do not index `mapping` here, which is why it never raises.
     # Return the original submission as the payload so the frontend can display what was actually
     # submitted (ka, description, address, borough, apartment, locationDetails, photo_b64).
     # The NYC 311 payload (agency, problem, etc.) is built here but not returned — we never

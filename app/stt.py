@@ -3,6 +3,7 @@ and the live demo (browser-recorded audio). Single thin API call — no local mo
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import tempfile
@@ -67,3 +68,68 @@ def transcribe_audio(data: bytes, mime: str = "audio/mpeg") -> str:
         contents=[types.Part.from_bytes(data=data, mime_type=mime), _PROMPT],
     )
     return (resp.text or "").strip()
+
+
+def detect_language(text: str) -> str:
+    """Detect language of text. Returns ISO 639-1 code (e.g. 'en', 'es', 'fr')."""
+    resp = _client_().models.generate_content(
+        model=STT_MODEL,
+        contents=[f"Detect the language of this text and respond ONLY with the ISO 639-1 code (e.g., 'en', 'es', 'fr', 'ja'). Text: {text}"],
+    )
+    return (resp.text or "en").strip().lower()
+
+
+def translate_to_english(text: str, source_lang: str) -> str:
+    """Translate text from source language to English."""
+    if source_lang.lower() == "en":
+        return text
+    resp = _client_().models.generate_content(
+        model=STT_MODEL,
+        contents=[f"Translate this {source_lang} text to English. Output ONLY the translation with no preamble.\n\n{text}"],
+    )
+    return (resp.text or text).strip()
+
+
+def translate_from_english(text: str, target_lang: str) -> str:
+    """Translate a single English string INTO target_lang (ISO 639-1) for display. No-op for
+    English or empty text."""
+    if not text or (target_lang or "en").lower() == "en":
+        return text
+    resp = _client_().models.generate_content(
+        model=STT_MODEL,
+        contents=[f"Translate this English text to {target_lang}. Output ONLY the translation "
+                  f"with no preamble or quotes.\n\n{text}"],
+    )
+    return (resp.text or text).strip()
+
+
+def translate_map(items: dict, target_lang: str) -> dict:
+    """Batch-translate all VALUES of `items` from English into target_lang in ONE Gemini call,
+    preserving keys. Used to localize a whole agent turn's user-facing strings (reply, candidate
+    titles/descriptions, reasoning, form.description) at once.
+
+    Graceful by design: returns `items` unchanged for English, an empty map, or any response that
+    is not valid same-keyed JSON — a translation hiccup must never break a turn."""
+    if not items or (target_lang or "en").lower() == "en":
+        return items
+    payload = json.dumps(items, ensure_ascii=False)
+    resp = _client_().models.generate_content(
+        model=STT_MODEL,
+        contents=[
+            f"Translate the string VALUES of this JSON object from English into {target_lang}. "
+            f"Keep the KEYS exactly the same. Output ONLY the resulting JSON object, no preamble, "
+            f"no markdown fences.\n\n{payload}"],
+    )
+    raw = (resp.text or "").strip()
+    # Tolerate ```json fences if the model adds them.
+    if raw.startswith("```"):
+        raw = raw.strip("`")
+        raw = raw[raw.find("{"):raw.rfind("}") + 1] if "{" in raw else raw
+    try:
+        out = json.loads(raw)
+    except (ValueError, TypeError):
+        return items
+    if not isinstance(out, dict):
+        return items
+    # Only trust keys we sent; fall back per-key to the original English on any miss.
+    return {k: (out[k] if isinstance(out.get(k), str) else v) for k, v in items.items()}
