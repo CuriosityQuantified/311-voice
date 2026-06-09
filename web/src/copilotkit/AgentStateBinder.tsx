@@ -18,6 +18,9 @@ interface AgentStateBinderProps {
 
 export default function AgentStateBinder({ mockState }: AgentStateBinderProps) {
   const threadId = useRef(crypto.randomUUID());
+  // Latest detected language, held in a ref so the []-dependency callbacks below read the
+  // current value (not a stale closure) when posting to /api/agent and /api/submit.
+  const languageRef = useRef("en");
   const [state, setState] = useState<AgentState>(mockState || DEFAULT_AGENT_STATE);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,7 +32,7 @@ export default function AgentStateBinder({ mockState }: AgentStateBinderProps) {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, thread_id: threadId.current }),
+        body: JSON.stringify({ text, thread_id: threadId.current, language: languageRef.current }),
       });
       if (!res.ok) {
         throw new Error(`Agent error: ${res.status}`);
@@ -59,8 +62,14 @@ export default function AgentStateBinder({ mockState }: AgentStateBinderProps) {
         throw new Error(`STT error: ${res.status}`);
       }
       const data = await res.json();
-      const text = data.text || "";
+      const text = data.text || "";          // English (translated) — what the agent processes
+      const lang = data.language || "en";    // resident's spoken language (ISO 639-1)
+      languageRef.current = lang;
       if (text) {
+        if (lang !== "en") {
+          setState((prev) => ({ ...prev, language: lang }));
+        }
+        // Send the ENGLISH text to the agent; outbound localization happens server-side via `language`.
         await sendToAgent(text);
       } else {
         setError("Could not transcribe audio. Please try again.");
@@ -85,7 +94,11 @@ export default function AgentStateBinder({ mockState }: AgentStateBinderProps) {
     setIsLoading(true);
     setError("");
     try {
-      const submission = await submitRequest(payload);
+      // Submit the on-screen description as-is (already localized for display). The backend
+      // translates it to English for the NYC payload and echoes the original back for the
+      // confirmation screen. `language` tells it whether translation is needed.
+      const submitPayload = { ...payload, language: languageRef.current };
+      const submission = await submitRequest(submitPayload);
       setState((prev) => ({
         ...prev,
         submission: submission as unknown as AgentState["submission"],
@@ -138,6 +151,7 @@ export default function AgentStateBinder({ mockState }: AgentStateBinderProps) {
         <MatchResults
           candidates={state.candidates || []}
           pickedKa={state.picked_ka || ""}
+          emergency={state.emergency || false}
           onContinue={() => sendToAgent("Continue to the form")}
           onBack={() => sendToAgent("Go back to mic")}
         />

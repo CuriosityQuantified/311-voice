@@ -39,6 +39,8 @@ export interface MatchCandidate {
 
 export interface AgentState {
   transcript: string;
+  original_transcript?: string; // Original language version of transcript (for display)
+  language?: string;           // ISO 639-1 of the resident's speech; drives outbound localization
   candidates: MatchCandidate[];
   picked_ka: string;
   reasoning: string;
@@ -70,6 +72,7 @@ export const DEFAULT_SUBMISSION: Submission = {
 
 export const DEFAULT_AGENT_STATE: AgentState = {
   transcript: "",
+  language: "en",
   candidates: [],
   picked_ka: "",
   reasoning: "",

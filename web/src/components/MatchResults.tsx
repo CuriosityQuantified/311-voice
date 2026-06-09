@@ -1,19 +1,29 @@
 import type { MatchCandidate } from '../types';
-import { CheckCircle, ArrowRight, Building2 } from 'lucide-react';
+import { CheckCircle, ArrowRight, Building2, AlertTriangle } from 'lucide-react';
 
 interface MatchResultsProps {
   candidates: MatchCandidate[];
   pickedKa: string;
   reasoning?: string;
+  emergency?: boolean;
   onContinue: () => void;
   onBack: () => void;
 }
 
-export default function MatchResults({ candidates, pickedKa, onContinue, onBack }: MatchResultsProps) {
+export default function MatchResults({ candidates, pickedKa, emergency, onContinue, onBack }: MatchResultsProps) {
   const picked = candidates.find((c) => c.ka === pickedKa);
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-2xl">
+      {emergency && (
+        <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 border-2 border-red-500">
+          <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" />
+          <p className="text-red-700 font-semibold">
+            This may be an emergency — call 911 now. You can still file this report below.
+          </p>
+        </div>
+      )}
+
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-2">We found the right service</h2>
         <p className="text-gray-600">Based on your description, here's what we recommend</p>

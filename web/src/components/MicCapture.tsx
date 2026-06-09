@@ -70,7 +70,10 @@ export default function MicCapture({ onTranscript, onAudioBlob, isProcessing }: 
   };
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="flex flex-col items-center gap-6 w-full">
+      <div className="w-full bg-nyc-blue text-white py-4 px-6 text-center rounded-lg">
+        <h1 className="text-3xl font-bold">311 NYC</h1>
+      </div>
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-2">What can we help you with?</h2>
         <p className="text-gray-600">Tap the microphone and describe your complaint</p>

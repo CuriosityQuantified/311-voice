@@ -28,6 +28,7 @@ export interface SubmitPayload {
   apartment?: string;
   locationDetails?: string;
   photo_b64?: string;
+  language?: string; // if non-English, backend translates description to English for the NYC payload
 }
 
 export interface SubmitResponse {
